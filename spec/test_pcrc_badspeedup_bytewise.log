@@ -1,0 +1,23 @@
+N=2^12 e N=2^13 è il limite tra speedup positivo e speedup negativo delle
+implementazioni del Parallel CRC rispetto al CRC bytewise.
+
+======= N=2^12; BLOCK_SIZE=128; STREAM_DIM=2; SEG_SIZE=N/STREAM_DIM; =======
+Parallel CRC 8 bit bytewise comparison: -- SPEEDUP 0.25594
+Parallel CRC 8 bit bytewise comparison with reduction: -- SPEEDUP 0.23044
+Parallel CRC 8 bit bytewise comparison with task parallelism: -- SPEEDUP 0.36636
+Parallel CRC 16 bit bytewise comparison: -- SPEEDUP 0.72451
+Parallel CRC 16 bit bytewise comparison with reduction: -- SPEEDUP 0.23619
+Parallel CRC 16 bit bytewise comparison with task parallelism: -- SPEEDUP 0.44931
+Parallel CRC 32 bit bytewise comparison: -- SPEEDUP 0.36155
+Parallel CRC 32 bit bytewise comparison with reduction: -- SPEEDUP 0.48401
+Parallel CRC 32 bit bytewise comparison  with task parallelism: -- SPEEDUP 0.21596
+======= N=2^13; BLOCK_SIZE=128; STREAM_DIM=2; SEG_SIZE=N/STREAM_DIM; =======
+Parallel CRC 8 bit bytewise comparison: -- SPEEDUP 0.36369
+Parallel CRC 8 bit bytewise comparison with reduction: -- SPEEDUP 0.95555
+Parallel CRC 8 bit bytewise comparison with task parallelism: -- SPEEDUP 0.90212
+Parallel CRC 16 bit bytewise comparison: -- SPEEDUP 0.48797
+Parallel CRC 16 bit bytewise comparison with reduction: -- SPEEDUP 1.44774
+Parallel CRC 16 bit bytewise comparison with task parallelism: -- SPEEDUP 1.02833
+Parallel CRC 32 bit bytewise comparison: -- SPEEDUP 0.46930
+Parallel CRC 32 bit bytewise comparison with reduction: -- SPEEDUP 0.68780
+Parallel CRC 32 bit bytewise comparison  with task parallelism: -- SPEEDUP 0.28820

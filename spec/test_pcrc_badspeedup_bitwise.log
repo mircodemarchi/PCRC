@@ -1,0 +1,23 @@
+N=2^9 e N=2^10 è il limite tra speedup positivo e speedup negativo delle
+implementazioni del Parallel CRC rispetto al CRC bitwise.
+
+======= N=2^10; BLOCK_SIZE=128; STREAM_DIM=2; SEG_SIZE=N/STREAM_DIM; =======
+Parallel CRC 8 bit: -- SPEEDUP 0.60038
+Parallel CRC 8 bit with reduction: -- SPEEDUP 1.29636
+Parallel CRC 8 bit with task parallelism: -- SPEEDUP 0.78312
+Parallel CRC 16 bit: -- SPEEDUP 0.93035
+Parallel CRC 16 bit with reduction: -- SPEEDUP 1.28736
+Parallel CRC 16 bit with task parallelism: -- SPEEDUP 0.95668
+Parallel CRC 32 bit: -- SPEEDUP 1.03503
+Parallel CRC 32 bit with reduction: -- SPEEDUP 0.75085
+Parallel CRC 32 bit with task parallelism: -- SPEEDUP 0.38226
+======= N=2^9; BLOCK_SIZE=128; STREAM_DIM=2; SEG_SIZE=N/STREAM_DIM; =======
+Parallel CRC 8 bit: -- SPEEDUP 0.36809
+Parallel CRC 8 bit with reduction: -- SPEEDUP 0.95850
+Parallel CRC 8 bit with task parallelism: -- SPEEDUP 0.30025
+Parallel CRC 16 bit: -- SPEEDUP 0.84430
+Parallel CRC 16 bit with reduction: -- SPEEDUP 0.68585
+Parallel CRC 16 bit with task parallelism: -- SPEEDUP 0.39325
+Parallel CRC 32 bit: -- SPEEDUP 0.32365
+Parallel CRC 32 bit with reduction: -- SPEEDUP 0.45082
+Parallel CRC 32 bit with task parallelism: -- SPEEDUP 0.22590
