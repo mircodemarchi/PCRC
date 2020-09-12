@@ -1,0 +1,152 @@
+======= N=2^16; BLOCK_SIZE=64; STREAM_DIM=2; SEG_SIZE=N/STREAM_DIM; =======
+Parallel CRC 8 bit: -- SPEEDUP 20.99904
+Parallel CRC 8 bit with reduction: -- SPEEDUP 36.88906
+Parallel CRC 8 bit with task parallelism: -- SPEEDUP 35.11040
+Parallel CRC 8 bit bytewise comparison: -- SPEEDUP 2.67493
+Parallel CRC 8 bit bytewise comparison with reduction: -- SPEEDUP 2.62233
+Parallel CRC 8 bit bytewise comparison with task parallelism: -- SPEEDUP 2.77512
+Parallel CRC 16 bit: -- SPEEDUP 33.88335
+Parallel CRC 16 bit with reduction: -- SPEEDUP 38.40219
+Parallel CRC 16 bit with task parallelism: -- SPEEDUP 31.22210
+Parallel CRC 16 bit bytewise comparison: -- SPEEDUP 3.45841
+Parallel CRC 16 bit bytewise comparison with reduction: -- SPEEDUP 3.55086
+Parallel CRC 16 bit bytewise comparison with task parallelism: -- SPEEDUP 2.89920
+Parallel CRC 32 bit: -- SPEEDUP 20.56088
+Parallel CRC 32 bit with reduction: -- SPEEDUP 22.41323
+Parallel CRC 32 bit with task parallelism: -- SPEEDUP 7.26240
+Parallel CRC 32 bit bytewise comparison: -- SPEEDUP 1.82463
+Parallel CRC 32 bit bytewise comparison with reduction: -- SPEEDUP 1.83183
+Parallel CRC 32 bit bytewise comparison  with task parallelism: -- SPEEDUP 0.73660
+======= N=2^16; BLOCK_SIZE=64; STREAM_DIM=4; SEG_SIZE=N/STREAM_DIM; =======
+Parallel CRC 8 bit: -- SPEEDUP 34.71340
+Parallel CRC 8 bit with reduction: -- SPEEDUP 37.40804
+Parallel CRC 8 bit with task parallelism: -- SPEEDUP 27.86828
+Parallel CRC 8 bit bytewise comparison: -- SPEEDUP 2.58712
+Parallel CRC 8 bit bytewise comparison with reduction: -- SPEEDUP 2.61057
+Parallel CRC 8 bit bytewise comparison with task parallelism: -- SPEEDUP 1.93434
+Parallel CRC 16 bit: -- SPEEDUP 34.98040
+Parallel CRC 16 bit with reduction: -- SPEEDUP 40.59672
+Parallel CRC 16 bit with task parallelism: -- SPEEDUP 26.11727
+Parallel CRC 16 bit bytewise comparison: -- SPEEDUP 3.44060
+Parallel CRC 16 bit bytewise comparison with reduction: -- SPEEDUP 3.85280
+Parallel CRC 16 bit bytewise comparison with task parallelism: -- SPEEDUP 1.51222
+Parallel CRC 32 bit: -- SPEEDUP 20.23205
+Parallel CRC 32 bit with reduction: -- SPEEDUP 20.01593
+Parallel CRC 32 bit with task parallelism: -- SPEEDUP 8.46386
+Parallel CRC 32 bit bytewise comparison: -- SPEEDUP 1.78715
+Parallel CRC 32 bit bytewise comparison with reduction: -- SPEEDUP 1.86166
+Parallel CRC 32 bit bytewise comparison  with task parallelism: -- SPEEDUP 0.71914
+======= N=2^16; BLOCK_SIZE=64; STREAM_DIM=8; SEG_SIZE=N/STREAM_DIM; =======
+Parallel CRC 8 bit: -- SPEEDUP 34.84819
+Parallel CRC 8 bit with reduction: -- SPEEDUP 36.78772
+Parallel CRC 8 bit with task parallelism: -- SPEEDUP 12.42068
+Parallel CRC 8 bit bytewise comparison: -- SPEEDUP 2.62896
+Parallel CRC 8 bit bytewise comparison with reduction: -- SPEEDUP 2.24892
+Parallel CRC 8 bit bytewise comparison with task parallelism: -- SPEEDUP 1.20580
+Parallel CRC 16 bit: -- SPEEDUP 34.97859
+Parallel CRC 16 bit with reduction: -- SPEEDUP 30.87446
+Parallel CRC 16 bit with task parallelism: -- SPEEDUP 12.41439
+Parallel CRC 16 bit bytewise comparison: -- SPEEDUP 4.01456
+Parallel CRC 16 bit bytewise comparison with reduction: -- SPEEDUP 3.86748
+Parallel CRC 16 bit bytewise comparison with task parallelism: -- SPEEDUP 1.57164
+Parallel CRC 32 bit: -- SPEEDUP 18.40449
+Parallel CRC 32 bit with reduction: -- SPEEDUP 22.06126
+Parallel CRC 32 bit with task parallelism: -- SPEEDUP 6.16501
+Parallel CRC 32 bit bytewise comparison: -- SPEEDUP 1.87856
+Parallel CRC 32 bit bytewise comparison with reduction: -- SPEEDUP 1.91637
+Parallel CRC 32 bit bytewise comparison  with task parallelism: -- SPEEDUP 0.64816
+======= N=2^16; BLOCK_SIZE=64; STREAM_DIM=16; SEG_SIZE=N/STREAM_DIM; =======
+Parallel CRC 8 bit: -- SPEEDUP 35.62267
+Parallel CRC 8 bit with reduction: -- SPEEDUP 39.44854
+Parallel CRC 8 bit with task parallelism: -- SPEEDUP 8.74495
+Parallel CRC 8 bit bytewise comparison: -- SPEEDUP 2.86288
+Parallel CRC 8 bit bytewise comparison with reduction: -- SPEEDUP 2.92197
+Parallel CRC 8 bit bytewise comparison with task parallelism: -- SPEEDUP 0.65075
+Parallel CRC 16 bit: -- SPEEDUP 35.79114
+Parallel CRC 16 bit with reduction: -- SPEEDUP 39.47111
+Parallel CRC 16 bit with task parallelism: -- SPEEDUP 5.59890
+Parallel CRC 16 bit bytewise comparison: -- SPEEDUP 3.82884
+Parallel CRC 16 bit bytewise comparison with reduction: -- SPEEDUP 3.81050
+Parallel CRC 16 bit bytewise comparison with task parallelism: -- SPEEDUP 0.75320
+Parallel CRC 32 bit: -- SPEEDUP 20.80871
+Parallel CRC 32 bit with reduction: -- SPEEDUP 22.61642
+Parallel CRC 32 bit with task parallelism: -- SPEEDUP 6.02083
+Parallel CRC 32 bit bytewise comparison: -- SPEEDUP 1.85810
+Parallel CRC 32 bit bytewise comparison with reduction: -- SPEEDUP 1.90996
+Parallel CRC 32 bit bytewise comparison  with task parallelism: -- SPEEDUP 0.50360
+======= N=2^16; BLOCK_SIZE=64; STREAM_DIM=32; SEG_SIZE=N/STREAM_DIM; =======
+Parallel CRC 8 bit: -- SPEEDUP 35.82185
+Parallel CRC 8 bit with reduction: -- SPEEDUP 38.81287
+Parallel CRC 8 bit with task parallelism: -- SPEEDUP 4.68957
+Parallel CRC 8 bit bytewise comparison: -- SPEEDUP 2.79720
+Parallel CRC 8 bit bytewise comparison with reduction: -- SPEEDUP 2.80490
+Parallel CRC 8 bit bytewise comparison with task parallelism: -- SPEEDUP 0.33723
+Parallel CRC 16 bit: -- SPEEDUP 36.51107
+Parallel CRC 16 bit with reduction: -- SPEEDUP 39.64628
+Parallel CRC 16 bit with task parallelism: -- SPEEDUP 3.57638
+Parallel CRC 16 bit bytewise comparison: -- SPEEDUP 3.79586
+Parallel CRC 16 bit bytewise comparison with reduction: -- SPEEDUP 3.97120
+Parallel CRC 16 bit bytewise comparison with task parallelism: -- SPEEDUP 0.44480
+Parallel CRC 32 bit: -- SPEEDUP 20.13575
+Parallel CRC 32 bit with reduction: -- SPEEDUP 21.77871
+Parallel CRC 32 bit with task parallelism: -- SPEEDUP 4.25815
+Parallel CRC 32 bit bytewise comparison: -- SPEEDUP 1.87439
+Parallel CRC 32 bit bytewise comparison with reduction: -- SPEEDUP 1.89655
+Parallel CRC 32 bit bytewise comparison  with task parallelism: -- SPEEDUP 0.34844
+======= N=2^16; BLOCK_SIZE=64; STREAM_DIM=4; SEG_SIZE=N/8; =======
+Parallel CRC 8 bit: -- SPEEDUP 34.15111
+Parallel CRC 8 bit with reduction: -- SPEEDUP 40.70844
+Parallel CRC 8 bit with task parallelism: -- SPEEDUP 16.56302
+Parallel CRC 8 bit bytewise comparison: -- SPEEDUP 2.71769
+Parallel CRC 8 bit bytewise comparison with reduction: -- SPEEDUP 2.64888
+Parallel CRC 8 bit bytewise comparison with task parallelism: -- SPEEDUP 0.45025
+Parallel CRC 16 bit: -- SPEEDUP 35.37141
+Parallel CRC 16 bit with reduction: -- SPEEDUP 39.84457
+Parallel CRC 16 bit with task parallelism: -- SPEEDUP 17.39609
+Parallel CRC 16 bit bytewise comparison: -- SPEEDUP 3.71675
+Parallel CRC 16 bit bytewise comparison with reduction: -- SPEEDUP 3.81211
+Parallel CRC 16 bit bytewise comparison with task parallelism: -- SPEEDUP 1.57757
+Parallel CRC 32 bit: -- SPEEDUP 20.32956
+Parallel CRC 32 bit with reduction: -- SPEEDUP 22.36624
+Parallel CRC 32 bit with task parallelism: -- SPEEDUP 6.76001
+Parallel CRC 32 bit bytewise comparison: -- SPEEDUP 1.84932
+Parallel CRC 32 bit bytewise comparison with reduction: -- SPEEDUP 1.90018
+Parallel CRC 32 bit bytewise comparison  with task parallelism: -- SPEEDUP 0.51214
+======= N=2^16; BLOCK_SIZE=64; STREAM_DIM=4; SEG_SIZE=N/16; =======
+Parallel CRC 8 bit: -- SPEEDUP 35.03307
+Parallel CRC 8 bit with reduction: -- SPEEDUP 39.56429
+Parallel CRC 8 bit with task parallelism: -- SPEEDUP 10.39044
+Parallel CRC 8 bit bytewise comparison: -- SPEEDUP 2.77882
+Parallel CRC 8 bit bytewise comparison with reduction: -- SPEEDUP 2.76649
+Parallel CRC 8 bit bytewise comparison with task parallelism: -- SPEEDUP 0.67527
+Parallel CRC 16 bit: -- SPEEDUP 34.95532
+Parallel CRC 16 bit with reduction: -- SPEEDUP 38.80985
+Parallel CRC 16 bit with task parallelism: -- SPEEDUP 10.04253
+Parallel CRC 16 bit bytewise comparison: -- SPEEDUP 3.78077
+Parallel CRC 16 bit bytewise comparison with reduction: -- SPEEDUP 3.85733
+Parallel CRC 16 bit bytewise comparison with task parallelism: -- SPEEDUP 0.77157
+Parallel CRC 32 bit: -- SPEEDUP 20.06931
+Parallel CRC 32 bit with reduction: -- SPEEDUP 21.72182
+Parallel CRC 32 bit with task parallelism: -- SPEEDUP 5.49615
+Parallel CRC 32 bit bytewise comparison: -- SPEEDUP 1.85170
+Parallel CRC 32 bit bytewise comparison with reduction: -- SPEEDUP 1.90151
+Parallel CRC 32 bit bytewise comparison  with task parallelism: -- SPEEDUP 0.46637
+======= N=2^16; BLOCK_SIZE=64; STREAM_DIM=4; SEG_SIZE=N/32; =======
+Parallel CRC 8 bit: -- SPEEDUP 35.21485
+Parallel CRC 8 bit with reduction: -- SPEEDUP 35.10479
+Parallel CRC 8 bit with task parallelism: -- SPEEDUP 5.50743
+Parallel CRC 8 bit bytewise comparison: -- SPEEDUP 2.75525
+Parallel CRC 8 bit bytewise comparison with reduction: -- SPEEDUP 2.80952
+Parallel CRC 8 bit bytewise comparison with task parallelism: -- SPEEDUP 0.39220
+Parallel CRC 16 bit: -- SPEEDUP 34.63448
+Parallel CRC 16 bit with reduction: -- SPEEDUP 40.76456
+Parallel CRC 16 bit with task parallelism: -- SPEEDUP 5.29539
+Parallel CRC 16 bit bytewise comparison: -- SPEEDUP 3.61762
+Parallel CRC 16 bit bytewise comparison with reduction: -- SPEEDUP 3.76865
+Parallel CRC 16 bit bytewise comparison with task parallelism: -- SPEEDUP 0.46830
+Parallel CRC 32 bit: -- SPEEDUP 20.32684
+Parallel CRC 32 bit with reduction: -- SPEEDUP 21.54946
+Parallel CRC 32 bit with task parallelism: -- SPEEDUP 3.65915
+Parallel CRC 32 bit bytewise comparison: -- SPEEDUP 1.88209
+Parallel CRC 32 bit bytewise comparison with reduction: -- SPEEDUP 1.90284
+Parallel CRC 32 bit bytewise comparison  with task parallelism: -- SPEEDUP 0.29941
