@@ -86,7 +86,7 @@ is the coefficient of the respective monomial:
 \item Then for the CRC computation is used a 
 \textbf{polynomial generator $G(x)$} that is 
 \textbf{polynomial of degree $m$}. The major index coefficient is always 
-1 $1$, in this way the polynomial generator guarantees to always be 
+$1$, in this way the polynomial generator guarantees to always be 
 of $m$ degree.
 
 \item In a reverse way the than the message $A$, \textbf{the polynomial 
@@ -142,7 +142,6 @@ for i in range(0 : N)
       polynomial_generator;
    }
 }
-
 return message[M-1 : 0];
 \end{verbatim}
 \end{frame}
@@ -224,7 +223,6 @@ for i in range(0:N / 8-1)
    message[LSB-8 : LSB-8-(M-1)] ^= 
    lookup_table[message[LSB : LSB-7]];
 }
-
 return message[M-1 : 0];
 \end{verbatim}
 \end{frame}
