@@ -37,7 +37,7 @@ make
     make run-test # equals to ./PCRC-test.x
     ```
 
-NOTE: CUDA implementation of PCRC runs multiple tests in sequence with different parameters in input, comparing it with the sequential CRC algorithm. The total execution time of all tests is about 22 minutes, then stop it when satisfied of the result obtained.
+NOTE: CUDA implementation of PCRC runs multiple tests in sequence with different parameters in input, comparing it with the sequential CRC algorithm. The first execution logs appreared after about 60 seconds. The total execution time of all tests is about 22 minutes, then stop it when satisfied of the result obtained.
 
 ## Sources
 
