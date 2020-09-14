@@ -107,9 +107,9 @@ static inline char *get_current_time()
 /// @brief Log helper to print all log info and filter the right log level.
 #define LOG_HELPER(level, fmt, ...) do { 										\
 	if (LOG_SHOULD_DISPLAY(level)) {											\
-		sprintf(file_buffer, "%-25s:%-4d", __FILENAME__, __LINE__);				\
+		sprintf(file_buffer, "%-15s:%-4d", __FILENAME__, __LINE__);				\
 		sprintf(func_buffer, "%s()", __func__);									\
-		printf("%s %s [%-25s %-25s] " fmt,           			 				\
+		printf("%s %s [%-19s %-20s] " fmt,           			 				\
 				get_current_time(), log_level[level], 							\
 				file_buffer, func_buffer, ##__VA_ARGS__);						\
 	} 																			\
