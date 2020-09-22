@@ -12,6 +12,8 @@
 
 #include "Timer.cuh"
 #include "CheckError.cuh"
+
+using namespace timer;
 //------------------------------------------------------------------------------
 
 #define BLOCK_SIZE 32   ///< Thread block dim.
@@ -72,14 +74,17 @@ void *matrix_mul_init(const constants_t *c)
     return matrix_mul_init_device(c, matrix_mul_init_common(c));
 }
 
-void matrix_mul_sequential(const constants_t *c, void *params)
+void matrix_mul_sequential(const constants_t *c, void *params, host_time_t *h_time)
 {
+    Timer<HOST> TM_host;
+
     const size_t N = c->N;
 
     uint32_t *h_matrixA = ((matrix_mul_params_t *) params)->h_matrix_a;
     uint32_t *h_matrixB = ((matrix_mul_params_t *) params)->h_matrix_b;
     uint32_t *h_matrixC = ((matrix_mul_params_t *) params)->h_matrix_res_host;
 
+    TM_host.start();
     for (size_t i = 0; i < N; i++) {
         for (size_t j = 0; j < N; j++) {
             uint32_t sum = 0;
@@ -88,10 +93,16 @@ void matrix_mul_sequential(const constants_t *c, void *params)
             h_matrixC[i * N + j] = sum;
         }
     }
+    TM_host.stop();
+
+    h_time->is_initialized = true;
+    h_time->exec_time = TM_host.duration();
 }
 
-void matrix_mul_parallel(const constants_t *c, void *params)
+void matrix_mul_parallel(const constants_t *c, void *params, device_time_t *d_time)
 {
+    Timer<DEVICE> TM_device_kernel, TM_device_htod, TM_device_dtoh;
+
     const size_t N = c->N;
     const size_t BLOCK_SIZE_X = BLOCK_SIZE;
     const size_t BLOCK_SIZE_Y = BLOCK_SIZE;
@@ -105,11 +116,14 @@ void matrix_mul_parallel(const constants_t *c, void *params)
     uint32_t *h_matrix_tmp = ((matrix_mul_params_t *) params)->h_matrix_res_dev;
 
     // Device copy inputs.
+    TM_device_htod.start();
     SAFE_CALL( cudaMemcpy( d_matrixA, h_matrixA, sizeof(int) * N * N, 
         cudaMemcpyHostToDevice ) )
     SAFE_CALL( cudaMemcpy( d_matrixB, h_matrixB, sizeof(int) * N * N, 
         cudaMemcpyHostToDevice ) )
+    TM_device_htod.stop();
 
+    TM_device_kernel.start();
     // Device dim.
     dim3 DimGrid(N / BLOCK_SIZE_X, N / BLOCK_SIZE_Y, 1);
     if (N % BLOCK_SIZE_X) DimGrid.x++;
@@ -120,10 +134,19 @@ void matrix_mul_parallel(const constants_t *c, void *params)
     matrixMultiplicationKernel<<< DimGrid, DimBlock >>>(d_matrixA, d_matrixB, 
         d_matrixC, N);
     CHECK_CUDA_ERROR
+    TM_device_kernel.stop();
 
     // Device copy result.
+    TM_device_dtoh.start();
     SAFE_CALL( cudaMemcpy( h_matrix_tmp, d_matrixC, sizeof(int) * N * N, 
         cudaMemcpyDeviceToHost ) )
+    TM_device_dtoh.stop();
+
+    d_time->is_initialized      = true;
+    d_time->is_task_parallelism = false;
+    d_time->htod_time   = TM_device_htod.duration();
+    d_time->kernel_time = TM_device_kernel.duration();
+    d_time->dtoh_time   = TM_device_dtoh.duration();
 }
 
 bool matrix_mul_compare(const constants_t *c, void *params)

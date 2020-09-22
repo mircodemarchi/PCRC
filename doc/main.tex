@@ -12,7 +12,7 @@
 
 \title
 {
-Parallel CRC Algorithm\\and Implementation with CUDA
+Parallel CRC Algorithm and Implementation with CUDA
 }
 \author{Mirco De Marchi - VR445319 \and Luigi Capogrosso - VR445456}
 
@@ -23,19 +23,19 @@ Parallel CRC Algorithm\\and Implementation with CUDA
 
 
 \begin{abstract}
-\textit{Cyclic redundancy checks (CRCs)} form a powerful class of codes suited especially 
-for the detection of burst errors in data storage and communication 
+\textit{Cyclic redundancy checks (CRCs)} form a powerful class of codes suited 
+especially for the detection of burst errors in data storage and communication 
 applications. The use of cyclic redundancy codes, referred to more briefly 
-in this document as check words, is one of the most weel known error checking mechanism. It is 
-customarily placed at the end of a data block, occupying one or more bytes of the 
-transmitted message. In this paper, we present a \textit{Parallel Cyclic 
-Redundancy Check (PCRC)} algorithm improved with CUDA. Our approach is to 
-systematically decompose the original input message into a set of subsequences 
-based on the \textit{Galois field} theory.
+in this document as check words, is one of the most well known error checking 
+mechanism. It is customarily placed at the end of a data block, occupying one 
+or more bytes of the transmitted message. In this paper, we present a 
+\textit{Parallel Cyclic Redundancy Check (PCRC)} algorithm improved with CUDA. 
+Our approach is to systematically decompose the original input message into a 
+set of subsequences based on the \textit{Galois field} theory.
 \end{abstract}
 
 
-\section{State of the art}
+\section{Introduction}
 Devices such as computers, routers, networking equipment, and components 
 that communicate information internally and/or with other devices. For 
 example, computers might communicate across a local area network (LAN) using 
@@ -44,37 +44,10 @@ communicate with each other over a single or parallel bit bus. \textbf{It is
 important for these devices to reliably communicate and detect errors in 
 their communication}.
 
-One common technique for detecting transmission errors is a technique known as 
+One common technique for detecting transmission errors is known as 
 \textbf{cyclic redundancy check (CRC)}. A CRC allows errors detection using 
 only a small number of redundant bits typically sent along with the 
-communicated information. For example, a 32-bit CRC gives strong protection 
-against burst bits errors in messages that are thousands bits long. 
-
-The fundamental principle upon which CRC is based can be expressed equivalently 
-in one of three ways.
-
-\begin{enumerate}
-	\item CRC can be described in terms of binary numbers division;
-	\item It can be performed utilizing a polynomials division;
-	\item The utility in implementing CRCs is often realized by designing special 
-	check circuits in which Exclusive Or (XOR) and other elementary binary 
-	operands generate partial results that can be used in CRC algorithm;
-\end{enumerate} 
-
-CRCs are specifically designed to protect against common types of errors 
-on communication channels, where they can provide quick and reasonable 
-assurance of the integrity of the messages delivered. However, CRCs are
-not suitable for protecting against intentional alteration of data.
-
-
-\section{Introduction}
-Modern day technology permits a large amounts of data tranfer between 
-computer or communication systems. During transmission these bits may become 
-altered, thereby creating an error. In order for one computer system to detect 
-when data sent by another computer system has an error, certain status 
-information is often transmitted along with the data. This status information 
-may include parity (even or odd), longitudinal redundancy check character, 
-or cyclic redundancy check code.
+communicated information.
 
 CRCs are based on the theory of \textbf{systematic cyclic codes}, which encode 
 messages by adding a fixed-length check value. Cyclic codes are not only simple
@@ -82,34 +55,18 @@ to implement but \textbf{have the benefit of being particularly well suited
 for the detection of burst errors}: contiguous sequences of erroneous data 
 symbols in messages.
 
-Specification of a CRC code requires definition so-called 
-\textbf{generator polynomial}. For the purposes of constructing polynomial codes, 
-we identify a string of $n$ symbols $a_{n-1},\dots{},a_{0}$ with the polynomial:
-\[
-   a_{n-1}x^{n-1}+\dots{}+a_{1}x+a_{0}
-\]
-
-This polynomial becomes the \textbf{divisor} in a 
+Specification of a CRC code requires the definition of so-called 
+\textbf{generator polynomial}. This generator polynomial becomes the \textbf{divisor} in a 
 \textbf{polynomial long division}, which takes the message as the 
-\textbf{divident}, the \textbf{quotient} is discarded and the 
-\textbf{remainder} becomes the result. The important is that \textbf{the 
+\textbf{dividend}, the \textbf{quotient} is discarded and the 
+\textbf{remainder} becomes the CRC code result. \textbf{The 
 polynomial coefficients are calculated according to the arithmetic of a finite 
 field}, so the addition operation can always be performed bitwise-parallel 
-(there is no carry between digits). A finite field is a set on which the 
-operations of multiplication, addition, subtraction and division are 
-defined and satisfy certain basic rules.
+(there is no carry between digits).
 
 A CRC is called an $N$-bit CRC when its check value is $N$ bits long. The 
 simplest error-detection system, the parity bit, is in fact a 1-bit CRC: 
 it uses the generator polynomial $x + 1$ (two terms), and has the name CRC-1.
-
-A CRC-enabled device calculates a short, fixed-length binary sequence, known 
-as CRC, that will be appended to the end of message sent. The receiving device 
-recalcutes the CRC code over the received message payload and If the CRC 
-values do not match, then the mesage contains a 
-data error. The device may take corrective action, such as rereading the block 
-or requesting that it be sent again. Otherwise, the data is assumed to 
-be error-free.
 
 The common hardware solution is the “Linear Feedback Shift Register” (LFSR), 
 which is a simple bitwise architecture for both encoding and deconding the 
@@ -131,18 +88,18 @@ For example, the input data \verb|Ox25=0010 0101| is taken as:
    A(x)=0x^{7}+0x^{6}+1x^{5}+0x^{4}+0x^{3}+1x^{2}+0x^{1}+1x^{0}
 \]
 
-Then for the CRC computation is used a polynomial generator $G(x)$ that is 
-polynomial of degree $m$. The major index coefficient is always $1$, in this 
-way the polynomial generator guarantees to always be of $m$ degree. 
-
-In a reverse way the than the message $A$, the polynomial generator can be 
-represented as a sequence of bit $G$ of size $m+1$ with the most significant bit 
-always to $1$. This the reason why you will always find the value representation 
-of the polynomial generator $G$ of size $m$, because the bit $1$ to the left is 
-implicit.
+Then for the CRC computation is used a polynomial generator $G(x)$ that is a 
+polynomial of degree $m$, where $m$ will be the length of the resulting CRC code. 
+The major index coefficient is always $1$, in this 
+way the polynomial generator guarantees to be of $m$ degree. 
 \[
-   G=[g_{m},g_{m-1},\dots{},g_{1},g_{0}] 
+G=[g_{m},g_{m-1},\dots{},g_{1},g_{0}] 
 \]
+In a reverse way than the message $A$, the polynomial generator can be 
+represented as a sequence of bit $G$ of size $m+1$ with the most significant bit 
+always to $1$. This is the reason why you will find the value representation 
+of the polynomial generator $G$ of size $m$, because the bit $1$ to the MSB is 
+implicit.
 \[
    G=g_{m}x^{m}+g_{m-1}x^{m-1}+\dots{}+g_{1}x+g_{0}
 \]
@@ -152,12 +109,12 @@ For example, Ethernet uses the following 32-bit polynomial value:
    +x^{12}+x^{16}+x^{22}+x^{23}+x^{26}+x^{32}
 \end{gather*}
 
-The \textbf{value of the polynomial generator} has a 
+The \textbf{polynomial generator value} has a 
 \textbf{great impact on its error detection} capabilities, its design is 
-non-trivial and requires serious math knowledge.
+non-trivial and requires serious mathematical knowledge.
 
-\textbf{The CRC detection code is the result of the reminder after dividing the 
-origninal message $A$ concatenated with $m$ zero bits by a polynomial generator
+\textbf{The CRC detection code is the reminder result after dividing the 
+original message $A$ concatenated with $m$ zero bits by a polynomial generator
 in binary modulo 2 arithmetic}.
 
 In the polynomial version this definition of CRC is equivalent to:
@@ -165,28 +122,20 @@ In the polynomial version this definition of CRC is equivalent to:
    CRC[A(x)]=A(x)x^{m}mod2(G(x))
 \]
 
-The binary modulo 2 arithmetic makes every operation between bits indipendent
+The binary modulo 2 arithmetic makes every operation between bits independent
 between each other. This means that \textbf{the carry bit can be completely 
-forgotten}. In practice the arithmetic operations are identical but the carryover 
-is ignored. In particular the binary modulo 2 reminder of the division always 
-generates a result that is a degree less of the degree of the divisor. Therefore
-the CRC result will always be a polynomial of degree $m-1$ that can be viewed as
+forgotten}. In particular the binary modulo 2 reminder of the division always 
+generates a result that is a degree less of the divisor degree. Therefore
+the CRC result will always be a polynomial of $m-1$ degree that can be viewed as
 a binary code of size $m$. In fact:
-\[
-   CRC[A(x)]=A(x)x^{m}mod2(G(x))
-\]
-is equal to:
 \[
    degree(CRC[A(x)])=m-1
 \]
 
-This beacuse the main difference between different CRC code is the length $m$ of
+The main difference between CRC code is the length $m$ of
 the code generated. The most important CRC Implementations are \textbf{CRC8}, 
 \textbf{CRC16}, \textbf{CRC32} and \textbf{CRC64}. The longer the length of the 
 CRC code, the more likely bit errors shall be detected. 
-In general if a network protocol provides very long message should be used a 
-longer CRC as CRC32 or CRC64, if a network exchanges short message can be used 
-shorter CRC error detection code as CRC8 or CRC16.
 
 Then there are different parametrization of the CRC:
 \begin{itemize}
@@ -204,7 +153,7 @@ Then there are different parametrization of the CRC:
    \item \textbf{Output reflected}: the result can be returned in reverse order 
    over the whole CRC value;
 
-   \item \textbf{Final XOR value}: is value xored to the final CRC value before 
+   \item \textbf{Final XOR value}: it is a value XORed to the final CRC value before 
    being returned and, in case, after the output reflected step.
 \end{itemize}
 
@@ -222,28 +171,24 @@ which gives the well-known congruence properties for polynomial division.
 \end{gather}
 \end{small}
 
-There is a system of arithmetic known as \textbf{Galois field arithmetic}. 
+There is a system of arithmetic known as \textbf{Galois field}. 
 A Galois field is an example of algebraic field, which has a set of elements 
 called \textbf{numbers or field elements}, and a definition of two operations 
-called \textbf{addition and multiplication }such that the formal properties 
-satisfied by the real arithmetic system (e.g. commutativity, associativity, and
-distributivity) are satisfied. 
+called \textbf{addition and multiplication}. 
 
 For each positive integer $M$, there is a Galois field called $GF(2^{M})$ that 
-has $2^{M}$ elements in it. The set of elements of $GF(2^{M})$ can be
-represented as the set of $M$-bit binary numbers in the range from $0$ to 
+has $2^{M}$ elements in it. The elements set of $GF(2^{M})$ can be
+represented with $M$-bit binary numbers in the range from $0$ to 
 $2^{M}-1$. The addition over Galois Field $GF(2^{M})$ is defined as bit-by-bit 
 modulo-2 addition which is equivalent to exclusive-or (i.e., XOR) operation.
 
-\textbf{In practice, all commonly used CRCs employ the Galois field of two 
-elements}, $GF(2)$. The two elements are usually called 0 and 1, 
-comfortably matching computer architecture. Multiplication of two elements $a$ 
+Multiplication of two elements $a$ 
 and $b$ in $GF(2^{M})$ will produce an element $c=ab$ by polynomial 
 multiplication modulo the irreducible polynomial G(x):
 \[
    C(x)=A(x)B(x)modG(x)
 \]
-where $A(x)$, $B(x)$ and $C(x)$ is the polynomial form of $a$, $b$, and $c$, 
+where $A(x)$, $B(x)$ and $C(x)$ is the polynomial form of the elements $a$, $b$, and $c$, 
 respectively.
 
 
@@ -267,8 +212,8 @@ message to left by $1$ bit and store the result to the running message.
 
 The second step is repeated $N$ times and at the end the remainder will be the 
 $M$ most significant bits, which is the CRC. Note that in bitwise CRC
-algorithm, we need to perform $N$ times of operation where in each operation 
-we need to perform checking the MSB bit, modulo-2 subtraction 
+algorithm, we need to perform $N$ loops where in each loop 
+we need to perform the MSB bit check, modulo-2 subtraction 
 (conditionally), and left shift.
 
 This is a \textbf{pseudocode of the bitwise CRC algorithm implementation}:
@@ -285,8 +230,8 @@ for i in range(0 : N)
    LSB = (N + M - 1) - i
    if (message[LSB] == 1)
    {
-      message[LSB : LSB-(M-1)] ^= 
-      polynomial_generator;
+      message[LSB : LSB-(M-1)] ^=
+              polynomial_generator;
    }
 }
 
@@ -294,6 +239,22 @@ return message[M-1 : 0];
 \end{verbatim}
 
 \textbf{In bytewise CRC algorithm, one byte is checked at a time}. 
+
+The bitwise algorithm is quite inefficient as it works bit by bit. 
+For larger input data, this could be quite slow. The idea behind the CRC bytewise 
+implementation is to precompute the CRC value for each possible byte by the 
+fixed polynomial and store these result in a lookup table. Since the polynomial 
+generator is fixed, 
+the lookup table can be precomputed independently from the message and it
+can be directly hard-coded. 
+
+A \textbf{simple pseudocode to generate the lookup table could be}:
+\begin{verbatim}
+for i in range(0 : 2^{8} - 1)
+{
+lookup_table[i] = crc_bitwise(i)
+}  
+\end{verbatim}
 
 In the first step, similar to bitwise CRC algorithm, we append $M$ zeros to 
 the original message after the LSB. 
@@ -308,7 +269,7 @@ remainder. This $M$-bit remainder will be XORed with the following MSB
 byte in the running message. Then we left shift the running message by $8$ bits.
 
 Repeat the second step by $\lceil{}N/8\rceil$ times. In total 
-there are $\lceil{}N/8\rceil$ operations with $28*M$ bit of memory for table 
+there are $\lceil{}N/8\rceil$ operations with $2^8*M$ bit of memory for table 
 lookup. Note that the table has $256$ entries each of which has M bits. 
 The table entries can be pre-computed since they only depend on the generator 
 polynomial.
@@ -326,7 +287,7 @@ for i in range(0:N / 8-1)
 {
    LSB = (N + M - 1) - (i * 8);
    message[LSB-8 : LSB-8-(M-1)] ^= 
-   lookup_table[message[LSB : LSB-7]];
+           lookup_table[message[LSB : LSB-7]];
 }
 
 return message[M-1 : 0];
@@ -377,51 +338,6 @@ const uint8_t crc8_lu[] = {
 \label{fig:LT-CRC8}
 \end{figure}
 
-So far \textbf{the algorithm is quite inefficient as it works bit by bit}. 
-For larger input data, this could be quite slow. But how can our CRC algorithm 
-be accelerated?
-
-The divident is the current CRC byte value and a byte can only take $256$ 
-different values. The polynomial (divisor) is fixed. \textbf{Why not precompute 
-the division for each possible byte by the fixed polynomial and store these 
-result in a lookup table}? This is possible as the remainder is always the same 
-for the same divident and divisor! Then the input stream can be processed byte 
-by byte instead of bit by bit.
-
-In computer science, \textbf{a lookup table is an array that replaces runtime 
-computation with a simpler array indexing operation} (Figure \ref{fig:LT-CRC8}). 
-The savings in terms of processing time can be significant, since retrieving a 
-value from memory is often faster than undergoing an “expensive” computation 
-or input/output operation. The tables may be precalculated and stored in 
-static program storage, calculated (or “pre-fetched”) as part of a program's 
-initialization phase (memoization), or even stored in hardware in 
-application-specific platforms.
-
-To do a table lookup (index an array), the result needs to be right shifted, or 
-the high order byte of the CRC can be right shifted first, then XOR'ed with a 
-byte of data to produce the new intermediate high order byte of the CRC, then 
-that has to be cycled $8$ times to produce the result of cycling the CRC $8$ 
-time, or this can be done in advance for all $256$ possible $8$ bit values, 
-to generate a table, and a table lookup can be used instead of cycling $8$ 
-times. After this cycling, the low order byte will need to be shifted left, 
-so you end up with the code shown.
-
-A left shifting CRC is similar to doing a long hand division in binary, using 
-the CRC polynomial as the divisor, and the data as a long dividend, except that 
-XOR is used instead of subtraction, and the final remainder is the CRC. It turns 
-out that XOR'ing $8$ data (dividend) bits at a time doesn't affect the result, 
-since each quotient bit is based only on the most significant bit of CRC 
-polynomial and the current most significant bit of the working dividend (data), 
-which allows for the optimization of using a table lookup.
-
-A \textbf{simple pseudocode to generate the lookup table could be}:
-\begin{verbatim}
-for i in range(0 : 2^{8} - 1)
-{
-   lookup_table[i] = crc_bitwise(i)
-}  
-\end{verbatim}
-
 
 \section{Parallel CRC Algorithm}
 \begin{figure}[bt]
@@ -455,9 +371,9 @@ Furthermore, from the Galois Field operations lemma, we obtain that:
 W_{i}(x)x^{(i+1)M}modG(x) = & (W_{i}(x)modG(x) \\& x^{(i+1)M}modG(x))modG(x)
 \end{split}
 \]
-The degree of the polynomial $W_{i}(x)$ for each chunk is $M-1$, therefore it 
+The degree of the polynomial $W_{i}(x)$ for each chunk is $M-1$, since it 
 is less than $M$, it means that $W_{i}(x)modG(x)=W_{i}(x)$. On the other hand 
-the beta coefficients are defined as 
+the beta coefficients can be defined as 
 $\beta{}_{i}=x^{(i+1)*M}modG(x)$ for $i=0,1,\dots{},n-1$. Therefore we have:
 \[
    CRC[A(x)]=W_{n-1}\otimes{}\beta{}_{n-1}\oplus{}\dots{}
@@ -482,13 +398,6 @@ The following algorithm is illustrated in Figure \ref{fig:PCRC}.
    parallel and then XOR the products. \textbf{This generates the CRC results}.
 \end{enumerate}
 
-To compute the beta factors, we have:
-\begin{gather*}
-   \beta{}_{0}=x^{M}modG(x)=[g_{m-1},\dots,g_{0}] \\
-   \beta{}_{1}=x^{2M}modG(x)=\beta{}_{0}\otimes{}\beta{}_{0}=\beta{}_{0}^{2} \\
-   \dots{} \\
-   \beta{}_{n-1}=x^{nM}modG(x)=\beta{}_{0}^{n}
-\end{gather*}
 Note that beta factors ($\beta{}_{n-1},\beta{}_{n-2},\beta{}_{0}$) 
 do not depend on the incoming message but only on the generator polynomial. 
 Since the polynomial is static, this should be pre-computed once and used 
@@ -525,13 +434,12 @@ sync();
 return xored(shared_memory);
 \end{verbatim}
 
-The last operation, that performs the Galois Field addition, xoring all the 
-results of the Galois Field multiplication calculated from each thread, 
-has been done in 2 ways:
+In our implementation, the last operation, that performs the Galois Field addition, XORing all the 
+results of the Galois Field multiplication calculated from each thread, has been done in 2 ways:
 \begin{enumerate}
    \item The standard implementation takes the first thread, stop all the 
    other and performs the XOR operation on all shared memory. This solution 
-   has a problem of divergence because one thread is in execution while the 
+   is more divergent because one thread is in execution while the 
    other has nothing to do.
    \item The reduction implementation takes the first half of all thread and 
    performs iteratively the XOR operation between a pair of values in shared 
@@ -540,26 +448,55 @@ has been done in 2 ways:
 \end{enumerate}
 
 Finally, since the thread execution is done in blocks, the result of the 
-device execution will be an array of partial results. Each value of the 
-array of partial results will be the xored value of all the Galois Field 
-multiplication of the message chunk of that specific thread block. 
+device execution will be an array of partial results. Each value of this 
+array will be the XORed value of all the Galois Field 
+multiplication of the message chunks of that specific thread block. 
 Therefore the host has to perform the XOR operation over the array of partial 
-results to find the right CRC code. The Figure \ref{fig:PCRC-Reduction} 
+results to find the resulting CRC code. The Figure \ref{fig:PCRC-reduction} 
 shows how the CRC result is obtained by the xoring computation over 
 the thread blocks.
 
 \begin{figure}[bt]
 \centering
 \includegraphics[width=\columnwidth]{figures/PCRC-reduction.png}
-\caption{XOR OPERATIONS PERFORM BY DEVICE IN RELATION WITH THE ONE PERFORM BY HOST}
+\caption{XOR OPERATIONS PERFORM BY DEVICE IN RELATION WITH THE ONE PERFORMS BY HOST}
 \label{fig:PCRC-reduction}
 \end{figure}
-\section{Performance analysis}
-Theoretically this level of performance is hundreds of 
-times faster than bitwise CRC algorithm or tens of times faster than 
-bytewise parallel CRC algorithm.
 
-With our software implementation we have achieved the following results:
+
+\section{Performance analysis}
+
+Our tests have been performed on the NVIDIA Tesla K40c GPU with the following key
+features:
+\begin{itemize}
+   \item Architecture: Kepler;
+   \item N of multiprocessor: 15;
+   \item Number of GPUs: 1 x GK110B;
+   \item Number of CUDA cores: 2880;
+   \item Threads max per multiprocessor: 2048;
+   \item Threads max per block: 1024;
+   \item Warp size: 32;
+   \item L1 Cache: 16 KB (per SMX);
+   \item L2 Cache: 1536 KB;
+   \item Base Clock: 745 MHz;
+   \item Boost Clock: 876 MHz;
+   \item Memory type: GDDR5;
+   \item Maximum global memory amount: 12 GB;
+   \item Memory bus width: 384 Bit;
+   \item Memory clock speed: 6008 MHz;
+   \item Memory bandwidth: 288.4 GB/s;
+   \item Shared memory per block: 48 KB;
+   \item Registers per block: 65536;
+   \item Constant memory: 64 KB;
+   \item Max power consumption: 235 W;
+   \item Processor core clock: 745 MHz.
+\end{itemize}
+
+Our CUDA kernels of the parallel CRC, that we have designed based on the considerations explained above, counts a \textbf{number of registers equal to 11} for both the standard implementation and the reduction implementation. With a so low number of registers, our PCRC implementation won't never have problems in registers allocation, unless very old GPUs were used.
+
+The shared memory size is equal to the block size, but each entry of the shared memory is $M$-bit size, that is the size of the CRC code generated. As consequence, the shared memory allocated for each block of thread is $M * BlockSize$ bits. Considering a $BlockSize=1024$ and a possible 64 bit implementation of PCRC, with $M=64$, the shared memory per block resulting will be of size $64*1024 = 65536 bit = 8192 byte = 8 KB$. A \textbf{shared memory maximum size of 8 KB}, also in this case, shouldn't give problem of memory allocation in most of the still existing GPU's architectures. Moreover, with the test analysis listed below, we can see that we obtain better performance results with a low block size value, therefore the size of the shared memory per block also decreases.
+
+With our software implementation we have achieved the following results. Consider that all \textbf{the speedup obtained includes, in the time calculation, the overhead of memory data exchange between host and device}.
 
 \subsection{$N=2^{16}$. $BlockSize=64$. $StreamDim=4$. $SegSize=N/StreamDim$}
 \begin{footnotesize}
@@ -651,23 +588,11 @@ PCRC32 bytewise comparison with task parallelism &	0.68456  \\
 \toprule
 \textbf{Test PCRC 128 blocksize} & \textbf{Speedup} \\
 \midrule
-PCRC8                                           &	21.32339 \\
-PCRC8 with reduction                            &	39.41265 \\
 PCRC8 with task parallelism                     &	32.97171 \\
-PCRC8 bytewise comparison                       &	2.70535  \\
-PCRC8 bytewise comparison with reduction:       &	2.64768  \\
 PCRC8 bytewise comparison with task parallelism &	2.48787  \\
-PCRC16                                           &	33.66302 \\
-PCRC16 with reduction                            &	38.77745 \\
 PCRC16 with task parallelism                     &	30.44083 \\
-PCRC16 bytewise comparison                       &	3.46636  \\
-PCRC16 bytewise comparison with reduction:       &	3.59283  \\
 PCRC16 bytewise comparison with task parallelism &	2.80089  \\
-PCRC32                                           &	20.42403 \\
-PCRC32 with reduction                            &	21.38471 \\
 PCRC32 with task parallelism                     &	7.35099  \\
-PCRC32 bytewise comparison                       &	1.87434  \\
-PCRC32 bytewise comparison with reduction:       &	1.86528  \\
 PCRC32 bytewise comparison with task parallelism &	0.72902  \\
 \bottomrule
 \end{tabular}
@@ -679,23 +604,11 @@ PCRC32 bytewise comparison with task parallelism &	0.72902  \\
 \toprule
 \textbf{Test PCRC 128 blocksize} & \textbf{Speedup} \\
 \midrule
-PCRC8                                           &	35.05756 \\
-PCRC8 with reduction                            &	38.59024 \\
 PCRC8 with task parallelism                     &	11.97966 \\
-PCRC8 bytewise comparison                       &	2.65855  \\
-PCRC8 bytewise comparison with reduction:       &	2.73349  \\
 PCRC8 bytewise comparison with task parallelism &	1.20074  \\
-PCRC16                                           &	34.06469 \\
-PCRC16 with reduction                            &	38.96202 \\
 PCRC16 with task parallelism                     &	11.68695 \\
-PCRC16 bytewise comparison                       &	3.87572  \\
-PCRC16 bytewise comparison with reduction:       &	3.22093  \\
 PCRC16 bytewise comparison with task parallelism &	1.58960  \\
-PCRC32                                           &	20.83102 \\
-PCRC32 with reduction                            &	22.14467 \\
 PCRC32 with task parallelism                     &	6.38649  \\
-PCRC32 bytewise comparison                       &	1.94807  \\
-PCRC32 bytewise comparison with reduction:       &	1.91344  \\
 PCRC32 bytewise comparison with task parallelism &	0.65893  \\
 \bottomrule
 \end{tabular}
@@ -707,37 +620,57 @@ PCRC32 bytewise comparison with task parallelism &	0.65893  \\
 \toprule
 \textbf{Test PCRC 128 blocksize} & \textbf{Speedup} \\
 \midrule
-PCRC8                                           &	35.41841 \\
-PCRC8 with reduction                            &	40.88182 \\
 PCRC8 with task parallelism                     &	17.13281 \\
-PCRC8 bytewise comparison                       &	2.40438  \\
-PCRC8 bytewise comparison with reduction:       &	2.97784  \\
 PCRC8 bytewise comparison with task parallelism &	0.47928  \\
-PCRC16                                           &	34.66451 \\
-PCRC16 with reduction                            &	42.29803 \\
 PCRC16 with task parallelism                     &	16.70620 \\
-PCRC16 bytewise comparison                       &	4.04358  \\
-PCRC16 bytewise comparison with reduction:       &	3.76574  \\
 PCRC16 bytewise comparison with task parallelism &	1.51226  \\
-PCRC32                                           &	21.27053 \\
-PCRC32 with reduction                            &	21.97304 \\
 PCRC32 with task parallelism                     &	7.47568  \\
-PCRC32 bytewise comparison                       &	1.92987  \\
-PCRC32 bytewise comparison with reduction:       &	1.90569  \\
 PCRC32 bytewise comparison with task parallelism &	0.52763  \\
 \bottomrule
 \end{tabular}
 \end{footnotesize}
 
+\subsection{$N=2^{10}$. $BlockSize=128$. $StreamDim=4$. $SegSize=N/StreamDim$}
+\begin{footnotesize}
+	\begin{tabular}{l|l|l|l|l|r|r|r|r|r|r||c|c|}
+		\toprule
+		\textbf{Test PCRC 128 blocksize bitwise limit} & \textbf{Speedup} \\
+		\midrule
+		PCRC8                                           &	0.60038	 \\
+		PCRC8 with reduction                            & 1.29636	 \\
+		PCRC8 with task parallelism                     &	0.78312 \\
+		PCRC16                                           &	0.93035 \\
+		PCRC16 with reduction                            & 1.28736	 \\
+		PCRC16 with task parallelism                     &	0.95668 \\
+		PCRC32                                           & 1.03503	\\
+		PCRC32 with reduction                            & 0.75085	 \\
+		PCRC32 with task parallelism                     &	0.38226  \\
+		\bottomrule
+	\end{tabular}
+\end{footnotesize}
+
+\subsection{$N=2^{13}$. $BlockSize=128$. $StreamDim=4$. $SegSize=N/StreamDim$}
+\begin{footnotesize}
+	\begin{tabular}{l|l|l|l|l|r|r|r|r|r|r||c|c|}
+		\toprule
+		\textbf{Test PCRC 128 blocksize bytewise limit} & \textbf{Speedup} \\
+		\midrule
+		PCRC8 bytewise comparison                       &	0.36369  \\
+		PCRC8 bytewise comparison with reduction:       &	0.95555  \\
+		PCRC8 bytewise comparison with task parallelism &	0.90212  \\
+		PCRC16 bytewise comparison                       &	0.48797  \\
+		PCRC16 bytewise comparison with reduction:       &	1.44774  \\
+		PCRC16 bytewise comparison with task parallelism &	1.02833  \\
+		PCRC32 bytewise comparison                       &	0.46930  \\
+		PCRC32 bytewise comparison with reduction:       &	0.68780  \\
+		PCRC32 bytewise comparison with task parallelism &	0.28820  \\
+		\bottomrule
+	\end{tabular}
+\end{footnotesize}
+
 \subsection{NVIDIA Nsight Graphics}
 \textbf{NVIDIA Nsight Graphics} is a low overhead performance analysis tool 
 designed to provide insights developers need to optimize their software. 
-Unbiased activity data is visualized within the tool to help users investigate 
-bottlenecks, avoid inferring false-positives, and pursue optimizations with 
-higher probability of performance gains. Users will be able to identify issues, 
-such as GPU starvation, unnecessary GPU synchronization, insufficient CPU 
-parallelizing, and even unexpectedly expensive algorithms across the CPUs and 
-GPUs of their target platform.
 
 The Figure \ref{fig:NSG-PCRC8} shows the standard algorithm profiling where 
 you can see on the left the kernel execution rates compared to memory transfer.
@@ -781,21 +714,38 @@ in the timeline, kernel execution and memory transfer occurs in parallel.
 
 \section{Conclusions}
 This paper shows a systematic method to calculate CRC in parallel using the 
-Galois Field property. The method can be easily expanded to all feasible $r$ 
+Galois Field property. The method can be easily expanded to all feasible
 parallel-input bits for fast CRC calculation without added complexity in the 
 developing process or practical limitation like the size of lookup tables 
 needed in other approaches.
 
+Theoretically this level of performance is hundreds of 
+times faster than bitwise CRC algorithm or tens of times faster than 
+bytewise parallel CRC algorithm.
+
 The implementation with tasks parallelism does not give better performance 
 because the overhead of the technique is not positively compensated on the 
-improvement that leads to performance. So the best result with parallelism 
-tasks is obtained for $StreamDim=4$ and $SegSize=N/StreamDim$. 
+improvement that leads to performance. Anyway the best result with tasks parallelism is obtained for $StreamDim=2$ and $SegSize=N/StreamDim$, with a \textit{25x} 
+average speedup compared to bitwise and a \textit{2x} average speedup compared to bytewise. 
 
-In general the best performances are with $BlockSize=128$, while in the case of 
-parallelism tasks the best performances are with $StreamDim=2$ and 
-$SegSize=N/StreamDim$ using the reduction algorithm that reduces the divergence 
-of the threads, which on average increases the performance compared to the 
-standard solution of some speedup units.
+In general the best performances that we obtained are with $BlockSize=128$. The standard kernel implementation give us a \textit{34x} average speedup compared to bitwise CRC algorithm and a \textit{2.5x} average speedup compared to bytewise. Using the reduction algorithm that reduces the divergence 
+of the threads, we obtain an average increase of the performance compared to the 
+standard solution of some speedup units, that is \textit{40x} speedup compared to bitwise CRC and \textit{3.5x} speedup compared to bytewise. 
 
-\textbf{From these results we can say that the PCRC speedup is more $+2.5$}.
+In detail, what we have seen during the execution of the tests is that 
+$N=2^{9}$ and $N=2^{10}$ is the limit between positive and negative speedup of 
+the PCRC implementations compared to bitwise CRC, while $N=2^{12}$ and $N=2^{13}$ 
+is the limit between positive and negative speedup of PCRC implementations 
+compared to bytewise CRC.
+
+All our tests were performed with the input $N=2^{16}$. With input from 
+$N=2^{10}$ up to $N=2^{16}$ we have an exponential increase in 
+speedup. With $N>2^{16}$ we have that the speedup still increases, 
+but with a linear trend with respect to the size of $N$.
+
+Based on our PCRC data input that we used for test, we can say that our CRC solution could be a really good choice, with a significant increase in performance, for devices using 
+Ethernet protocol (maximum packet size $2^{16}$), but not for embedded devices 
+using protocols like ZigBee (maximum packet size $2^{7}$).
+
+\textbf{From these results we can say that the PCRC speedup is always more than \textit{2.5x} with a maximum of \textit{40x}}.
 \end{document}

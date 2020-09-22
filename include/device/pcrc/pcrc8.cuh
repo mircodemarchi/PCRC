@@ -30,17 +30,17 @@ void *pcrc8_init_task_parallelism(const constants_t *c);
  * @param params Generic params that have to point to a pcrc8_params_t 
  * structure.
  */
-void pcrc8_sequential(const constants_t *c, void *params);
-void pcrc8_sequential_bytewise(const constants_t *c, void *params);
+void pcrc8_sequential(const constants_t *c, void *params, host_time_t *h_time);
+void pcrc8_sequential_bytewise(const constants_t *c, void *params, host_time_t *h_time);
 
 /**
  * @brief Calculate the CRC32 in parallel device version.
  * @param params Generic params that have to point to a pcrc8_params_t 
  * structure.
  */
-void pcrc8_parallel(const constants_t *c, void *params);
-void pcrc8_parallel_reduction(const constants_t *c, void *params);
-void pcrc8_parallel_task_parallelism(const constants_t *c, void *params);
+void pcrc8_parallel(const constants_t *c, void *params, device_time_t *d_time);
+void pcrc8_parallel_reduction(const constants_t *c, void *params, device_time_t *d_time);
+void pcrc8_parallel_task_parallelism(const constants_t *c, void *params, device_time_t *d_time);
 
 /**
  * @brief Compare the CRC results taken from the params in input between the 

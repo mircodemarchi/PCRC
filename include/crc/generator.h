@@ -19,6 +19,7 @@ extern "C" {
 
 /// CRC32 polynomial generator.
 #define CRC32 0x04C11DB7
+#define CRC32_INTEL 0x1EDC6F41
 
 /// CRC64 polynomial generator.
 #define CRC64_ECMA 0x42F0E1EBA9EA3693

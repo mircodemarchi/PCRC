@@ -178,10 +178,20 @@ set(CMAKE_C_FLAGS"${CMAKE_C_FLAGS} -Wall")
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wsign-conversion")
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wuninitialized")
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=0")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse4")
 
 # ------------------------------------------------------------------------------
 # Set the CUDA compiler options.
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch=sm_30")
+# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch=sm_30")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch=sm_70")
+# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_50,code=sm_50")
+# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_52,code=sm_52")
+# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60")
+# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_61,code=sm_61")
+# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_70,code=sm_70")
+# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_75,code=sm_75")
+# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_75,code=compute_75")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -O2")
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -w")
 
 # ------------------------------------------------------------------------------
@@ -219,6 +229,8 @@ set(COMMON_SOURCE_FILES
     
     src/mod2-arithmetic/mod2.c
     src/mod2-arithmetic/mul2.c
+
+    src/crc/crc-utils.c
 )
 
 if(TEST)

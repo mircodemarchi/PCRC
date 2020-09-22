@@ -21,6 +21,13 @@
 #include "crc16-bytewise.h"
 #include "crc32-bytewise.h"
 #include "crc64-bytewise.h"
+#include "crc-utils.h"
+//------------------------------------------------------------------------------
+
+#define TEST_CRC8   1
+#define TEST_CRC16  1
+#define TEST_CRC32  1
+
 //------------------------------------------------------------------------------
 
 /**
@@ -52,6 +59,8 @@ static void test_params_pcrc16(const constants_t *c, void *params);
  */
 static void test_pcrc32(const constants_t *c);
 static void test_params_pcrc32(const constants_t *c, void *params);
+static void test_pcrc32_intel(const constants_t *c);
+static void test_params_pcrc32_intel(const constants_t *c, void *params);
 //------------------------------------------------------------------------------
 
 
@@ -169,7 +178,7 @@ compare_common_descriptor_t runs_pcrc8[] = {
         .device_algorithm   = &pcrc8_parallel,
         .free_device        = &pcrc8_free_device,
         .compare            = &pcrc8_compare,
-        .info               = "Parallel CRC 8 bit"
+        .info               = "Parallel CRC 8 bit bitwise"
     },
     { // PCRC 8 bit with reduction.
         .init_device        = &pcrc8_init_device_reduction,
@@ -177,7 +186,7 @@ compare_common_descriptor_t runs_pcrc8[] = {
         .device_algorithm   = &pcrc8_parallel_reduction,
         .free_device        = &pcrc8_free_device_reduction,
         .compare            = &pcrc8_compare_reduction,
-        .info               = "Parallel CRC 8 bit with reduction"
+        .info               = "Parallel CRC 8 bit bitwise with reduction"
     },
     { // PCRC 8 bit with task parallelism.
         .init_device        = &pcrc8_init_device_task_parallelism,
@@ -185,7 +194,7 @@ compare_common_descriptor_t runs_pcrc8[] = {
         .device_algorithm   = &pcrc8_parallel_task_parallelism,
         .free_device        = &pcrc8_free_device_task_parallelism,
         .compare            = &pcrc8_compare_task_parallelism,
-        .info               = "Parallel CRC 8 bit with task parallelism"
+        .info               = "Parallel CRC 8 bit bitwise with task parallelism"
     },
     { // PCRC 8 bit bytewise comparison.
         .init_device        = &pcrc8_init_device,
@@ -193,7 +202,7 @@ compare_common_descriptor_t runs_pcrc8[] = {
         .device_algorithm   = &pcrc8_parallel,
         .free_device        = &pcrc8_free_device,
         .compare            = &pcrc8_compare,
-        .info               = "Parallel CRC 8 bit bytewise comparison"
+        .info               = "Parallel CRC 8 bit bytewise"
     },
     { // PCRC 8 bit bytewise comparison with reduction.
         .init_device        = &pcrc8_init_device_reduction,
@@ -201,7 +210,7 @@ compare_common_descriptor_t runs_pcrc8[] = {
         .device_algorithm   = &pcrc8_parallel_reduction,
         .free_device        = &pcrc8_free_device_reduction,
         .compare            = &pcrc8_compare_reduction,
-        .info               = "Parallel CRC 8 bit bytewise comparison with reduction"
+        .info               = "Parallel CRC 8 bit bytewise with reduction"
     },
     { // PCRC 8 bit bytewise comparison with task parallelism.
         .init_device        = &pcrc8_init_device_task_parallelism,
@@ -209,7 +218,7 @@ compare_common_descriptor_t runs_pcrc8[] = {
         .device_algorithm   = &pcrc8_parallel_task_parallelism,
         .free_device        = &pcrc8_free_device_task_parallelism,
         .compare            = &pcrc8_compare_task_parallelism,
-        .info               = "Parallel CRC 8 bit bytewise comparison with task parallelism"
+        .info               = "Parallel CRC 8 bit bytewise with task parallelism"
     },
 };
 // ======== TEST PCRC16 ========
@@ -220,7 +229,7 @@ compare_common_descriptor_t runs_pcrc16[] = {
         .device_algorithm   = &pcrc16_parallel,
         .free_device        = &pcrc16_free_device,
         .compare            = &pcrc16_compare,
-        .info               = "Parallel CRC 16 bit"
+        .info               = "Parallel CRC 16 bit bitwise"
     },
     { // PCRC 16 bit with reduction.
         .init_device        = &pcrc16_init_device_reduction,
@@ -228,7 +237,7 @@ compare_common_descriptor_t runs_pcrc16[] = {
         .device_algorithm   = &pcrc16_parallel_reduction,
         .free_device        = &pcrc16_free_device_reduction,
         .compare            = &pcrc16_compare_reduction,
-        .info               = "Parallel CRC 16 bit with reduction"
+        .info               = "Parallel CRC 16 bit bitwise with reduction"
     },
     { // PCRC 16 bit with task parallelism.
         .init_device        = &pcrc16_init_device_task_parallelism,
@@ -236,7 +245,7 @@ compare_common_descriptor_t runs_pcrc16[] = {
         .device_algorithm   = &pcrc16_parallel_task_parallelism,
         .free_device        = &pcrc16_free_device_task_parallelism,
         .compare            = &pcrc16_compare_task_parallelism,
-        .info               = "Parallel CRC 16 bit with task parallelism"
+        .info               = "Parallel CRC 16 bit bitwise with task parallelism"
     },
     { // PCRC 16 bit bytewise comparison.
         .init_device        = &pcrc16_init_device,
@@ -244,7 +253,7 @@ compare_common_descriptor_t runs_pcrc16[] = {
         .device_algorithm   = &pcrc16_parallel,
         .free_device        = &pcrc16_free_device,
         .compare            = &pcrc16_compare,
-        .info               = "Parallel CRC 16 bit bytewise comparison"
+        .info               = "Parallel CRC 16 bit bytewise"
     },
     { // PCRC 16 bit bytewise comparison with reduction.
         .init_device        = &pcrc16_init_device_reduction,
@@ -252,7 +261,7 @@ compare_common_descriptor_t runs_pcrc16[] = {
         .device_algorithm   = &pcrc16_parallel_reduction,
         .free_device        = &pcrc16_free_device_reduction,
         .compare            = &pcrc16_compare_reduction,
-        .info               = "Parallel CRC 16 bit bytewise comparison with reduction"
+        .info               = "Parallel CRC 16 bit bytewise with reduction"
     },
     { // PCRC 16 bit bytewise comparison with task parallelism.
         .init_device        = &pcrc16_init_device_task_parallelism,
@@ -260,7 +269,7 @@ compare_common_descriptor_t runs_pcrc16[] = {
         .device_algorithm   = &pcrc16_parallel_task_parallelism,
         .free_device        = &pcrc16_free_device_task_parallelism,
         .compare            = &pcrc16_compare_task_parallelism,
-        .info               = "Parallel CRC 16 bit bytewise comparison with task parallelism"
+        .info               = "Parallel CRC 16 bit bytewise with task parallelism"
     },
 };
 // ======== TEST PCRC32 ========
@@ -271,7 +280,7 @@ compare_common_descriptor_t runs_pcrc32[] = {
         .device_algorithm   = &pcrc32_parallel,
         .free_device        = &pcrc32_free_device,
         .compare            = &pcrc32_compare,
-        .info               = "Parallel CRC 32 bit"
+        .info               = "Parallel CRC 32 bit standard bitwise"
     },
     { // PCRC 32 bit with reduction.
         .init_device        = &pcrc32_init_device_reduction,
@@ -279,7 +288,7 @@ compare_common_descriptor_t runs_pcrc32[] = {
         .device_algorithm   = &pcrc32_parallel_reduction,
         .free_device        = &pcrc32_free_device_reduction,
         .compare            = &pcrc32_compare_reduction,
-        .info               = "Parallel CRC 32 bit with reduction"
+        .info               = "Parallel CRC 32 bit standard bitwise with reduction"
     },
     { // PCRC 32 bit with task parallelism.
         .init_device        = &pcrc32_init_device_task_parallelism,
@@ -287,7 +296,7 @@ compare_common_descriptor_t runs_pcrc32[] = {
         .device_algorithm   = &pcrc32_parallel_task_parallelism,
         .free_device        = &pcrc32_free_device_task_parallelism,
         .compare            = &pcrc32_compare_task_parallelism,
-        .info               = "Parallel CRC 32 bit with task parallelism"
+        .info               = "Parallel CRC 32 bit standard bitwise with task parallelism"
     },
     { // PCRC 32 bit bytewise comparison.
         .init_device        = &pcrc32_init_device,
@@ -295,7 +304,7 @@ compare_common_descriptor_t runs_pcrc32[] = {
         .device_algorithm   = &pcrc32_parallel,
         .free_device        = &pcrc32_free_device,
         .compare            = &pcrc32_compare,
-        .info               = "Parallel CRC 32 bit bytewise comparison"
+        .info               = "Parallel CRC 32 bit bytewise"
     },
     { // PCRC 32 bit bytewise comparison with reduction.
         .init_device        = &pcrc32_init_device_reduction,
@@ -303,7 +312,7 @@ compare_common_descriptor_t runs_pcrc32[] = {
         .device_algorithm   = &pcrc32_parallel_reduction,
         .free_device        = &pcrc32_free_device_reduction,
         .compare            = &pcrc32_compare_reduction,
-        .info               = "Parallel CRC 32 bit bytewise comparison with reduction"
+        .info               = "Parallel CRC 32 bit bytewise with reduction"
     },
     { // PCRC 32 bit bytewise comparison with task parallelism.
         .init_device        = &pcrc32_init_device_task_parallelism,
@@ -311,7 +320,58 @@ compare_common_descriptor_t runs_pcrc32[] = {
         .device_algorithm   = &pcrc32_parallel_task_parallelism,
         .free_device        = &pcrc32_free_device_task_parallelism,
         .compare            = &pcrc32_compare_task_parallelism,
-        .info               = "Parallel CRC 32 bit bytewise comparison  with task parallelism"
+        .info               = "Parallel CRC 32 bit bytewise with task parallelism"
+    },
+};
+
+compare_common_descriptor_t runs_pcrc32_intel[] = {
+    { // PCRC 32 bit intel sw comparison.
+        .init_device        = &pcrc32_intel_init_device,
+        .host_algorithm     = &pcrc32_intel_sequential,
+        .device_algorithm   = &pcrc32_intel_parallel,
+        .free_device        = &pcrc32_free_device,
+        .compare            = &pcrc32_compare,
+        .info               = "Parallel CRC 32 bit Intel SW bitwise"
+    },
+    { // PCRC 32 bit intel sw comparison with reduction.
+        .init_device        = &pcrc32_intel_init_device_reduction,
+        .host_algorithm     = &pcrc32_intel_sequential,
+        .device_algorithm   = &pcrc32_intel_parallel_reduction,
+        .free_device        = &pcrc32_free_device_reduction,
+        .compare            = &pcrc32_compare_reduction,
+        .info               = "Parallel CRC 32 bit Intel SW bitwise with reduction"
+    },
+    { // PCRC 32 bit intel sw comparison with task parallelism.
+        .init_device        = &pcrc32_intel_init_device_task_parallelism,
+        .host_algorithm     = &pcrc32_intel_sequential,
+        .device_algorithm   = &pcrc32_intel_parallel_task_parallelism,
+        .free_device        = &pcrc32_free_device_task_parallelism,
+        .compare            = &pcrc32_compare_task_parallelism,
+        .info               = "Parallel CRC 32 bit Intel SW bitwise with task parallelism"
+    },
+    { // PCRC 32 bit intel hw comparison.
+        .init_device        = &pcrc32_intel_init_device,
+        .host_algorithm     = &pcrc32_intel_sequential_hw,
+        .device_algorithm   = &pcrc32_intel_parallel,
+        .free_device        = &pcrc32_free_device,
+        .compare            = &pcrc32_compare,
+        .info               = "Parallel CRC 32 bit Intel HW bitwise"
+    },
+    { // PCRC 32 bit intel hw comparison with reduction.
+        .init_device        = &pcrc32_intel_init_device_reduction,
+        .host_algorithm     = &pcrc32_intel_sequential_hw,
+        .device_algorithm   = &pcrc32_intel_parallel_reduction,
+        .free_device        = &pcrc32_free_device_reduction,
+        .compare            = &pcrc32_compare_reduction,
+        .info               = "Parallel CRC 32 bit Intel HW bitwise with reduction"
+    },
+    { // PCRC 32 bit intel hw comparison with task parallelism.
+        .init_device        = &pcrc32_intel_init_device_task_parallelism,
+        .host_algorithm     = &pcrc32_intel_sequential_hw,
+        .device_algorithm   = &pcrc32_intel_parallel_task_parallelism,
+        .free_device        = &pcrc32_free_device_task_parallelism,
+        .compare            = &pcrc32_compare_task_parallelism,
+        .info               = "Parallel CRC 32 bit Intel HW bitwise with task parallelism"
     },
 };
 //------------------------------------------------------------------------------
@@ -327,9 +387,11 @@ static void test_pcrc()
 
 static void test_pcrc8(const constants_t *c)
 {
+#if TEST_CRC8
     void *common_params_pcrc8 = pcrc8_init_common(c);
     test_params_pcrc8(c, common_params_pcrc8);
     pcrc8_free_common(common_params_pcrc8);
+#endif
 }
 
 static void test_params_pcrc8(const constants_t *c, void *params)
@@ -344,9 +406,11 @@ static void test_params_pcrc8(const constants_t *c, void *params)
 
 static void test_pcrc16(const constants_t *c)
 {
+#if TEST_CRC16
     void *common_params_pcrc16 = pcrc16_init_common(c);
     test_params_pcrc16(c, common_params_pcrc16);
     pcrc16_free_common(common_params_pcrc16);
+#endif
 }
 
 static void test_params_pcrc16(const constants_t *c, void *params)
@@ -361,9 +425,11 @@ static void test_params_pcrc16(const constants_t *c, void *params)
 
 static void test_pcrc32(const constants_t *c)
 {
+#if TEST_CRC32
     void *common_params_pcrc32 = pcrc32_init_common(c);
     test_params_pcrc32(c, common_params_pcrc32);
     pcrc32_free_common(common_params_pcrc32);
+#endif
 }
 
 static void test_params_pcrc32(const constants_t *c, void *params)
@@ -373,6 +439,25 @@ static void test_params_pcrc32(const constants_t *c, void *params)
     for (size_t i = 0; i < numof_compare_pcrc32; i++)
     {
         compare_common_run(c, params, &runs_pcrc32[i]);
+    }
+}
+
+static void test_pcrc32_intel(const constants_t *c)
+{
+#if TEST_CRC32
+    void *common_params_pcrc32 = pcrc32_intel_init_common(c);
+    test_params_pcrc32_intel(c, common_params_pcrc32);
+    pcrc32_free_common(common_params_pcrc32);
+#endif
+}
+
+static void test_params_pcrc32_intel(const constants_t *c, void *params)
+{
+    size_t numof_compare_pcrc32 = sizeof(runs_pcrc32_intel) 
+                                / sizeof(compare_common_descriptor_t);
+    for (size_t i = 0; i < numof_compare_pcrc32; i++)
+    {
+        compare_common_run(c, params, &runs_pcrc32_intel[i]);
     }
 }
 //------------------------------------------------------------------------------
@@ -402,6 +487,9 @@ int main()
     print_crc16_lu(generate_crc16_lu(crc16_lookup));
     print_crc32_lu(generate_crc32_lu(crc32_lookup));
     print_crc64_lu(generate_crc64_lu(crc64_lookup));
+
+    uint8_t reverse8_lookup[256];
+    print_reverse8_lu(generate_reverse8_lu(reverse8_lookup));
 #endif
 
 #if 1
@@ -418,6 +506,7 @@ int main()
     test_pcrc8(&constant);
     test_pcrc16(&constant);
     test_pcrc32(&constant);
+    test_pcrc32_intel(&constant);
 
     N = 1 << 16;
     STREAM_DIM = 4;
@@ -427,6 +516,7 @@ int main()
     test_pcrc8(&constant);
     test_pcrc16(&constant);
     test_pcrc32(&constant);
+    test_pcrc32_intel(&constant);
 
     N = 1 << 16;
     STREAM_DIM = 8;
@@ -436,6 +526,7 @@ int main()
     test_pcrc8(&constant);
     test_pcrc16(&constant);
     test_pcrc32(&constant);
+    test_pcrc32_intel(&constant);
 
     N = 1 << 16;
     STREAM_DIM = 16;
@@ -445,6 +536,7 @@ int main()
     test_pcrc8(&constant);
     test_pcrc16(&constant);
     test_pcrc32(&constant);
+    test_pcrc32_intel(&constant);
 
     N = 1 << 16;
     STREAM_DIM = 32;
@@ -454,6 +546,7 @@ int main()
     test_pcrc8(&constant);
     test_pcrc16(&constant);
     test_pcrc32(&constant);
+    test_pcrc32_intel(&constant);
 
     N = 1 << 16;
     STREAM_DIM = 4;
@@ -463,6 +556,7 @@ int main()
     test_pcrc8(&constant);
     test_pcrc16(&constant);
     test_pcrc32(&constant);
+    test_pcrc32_intel(&constant);
 
     N = 1 << 16;
     STREAM_DIM = 4;
@@ -472,6 +566,7 @@ int main()
     test_pcrc8(&constant);
     test_pcrc16(&constant);
     test_pcrc32(&constant);
+    test_pcrc32_intel(&constant);
 
     N = 1 << 16;
     STREAM_DIM = 4;
@@ -481,5 +576,56 @@ int main()
     test_pcrc8(&constant);
     test_pcrc16(&constant);
     test_pcrc32(&constant);
+    test_pcrc32_intel(&constant);
+
+    N = 1 << 10;
+    STREAM_DIM = 4;
+    constant = {.N = N, .STREAM_DIM=STREAM_DIM, .SEG_SIZE=N/STREAM_DIM};
+    LOGI("======= N=2^10; BLOCK_SIZE=%d; STREAM_DIM=%d; SEG_SIZE=N/STREAM_DIM; =======\n", 
+         BLOCK_SIZE, constant.STREAM_DIM);
+    test_pcrc8(&constant);
+    test_pcrc16(&constant);
+    test_pcrc32(&constant);
+    test_pcrc32_intel(&constant);
+
+    N = 1 << 13;
+    STREAM_DIM = 4;
+    constant = {.N = N, .STREAM_DIM=STREAM_DIM, .SEG_SIZE=N/STREAM_DIM};
+    LOGI("======= N=2^13; BLOCK_SIZE=%d; STREAM_DIM=%d; SEG_SIZE=N/STREAM_DIM; =======\n", 
+         BLOCK_SIZE, constant.STREAM_DIM);
+    test_pcrc8(&constant);
+    test_pcrc16(&constant);
+    test_pcrc32(&constant);
+    test_pcrc32_intel(&constant);
+
+    N = 1 << 18;
+    STREAM_DIM = 4;
+    constant = {.N = N, .STREAM_DIM=STREAM_DIM, .SEG_SIZE=N/STREAM_DIM};
+    LOGI("======= N=2^18; BLOCK_SIZE=%d; STREAM_DIM=%d; SEG_SIZE=N/STREAM_DIM; =======\n", 
+         BLOCK_SIZE, constant.STREAM_DIM);
+    test_pcrc8(&constant);
+    test_pcrc16(&constant);
+    test_pcrc32(&constant);
+    test_pcrc32_intel(&constant);
+
+    N = 1 << 20;
+    STREAM_DIM = 4;
+    constant = {.N = N, .STREAM_DIM=STREAM_DIM, .SEG_SIZE=N/STREAM_DIM};
+    LOGI("======= N=2^20; BLOCK_SIZE=%d; STREAM_DIM=%d; SEG_SIZE=N/STREAM_DIM; =======\n", 
+         BLOCK_SIZE, constant.STREAM_DIM);
+    test_pcrc8(&constant);
+    test_pcrc16(&constant);
+    test_pcrc32(&constant);
+    test_pcrc32_intel(&constant);
+
+    N = 1 << 22;
+    STREAM_DIM = 4;
+    constant = {.N = N, .STREAM_DIM=STREAM_DIM, .SEG_SIZE=N/STREAM_DIM};
+    LOGI("======= N=2^22; BLOCK_SIZE=%d; STREAM_DIM=%d; SEG_SIZE=N/STREAM_DIM; =======\n", 
+         BLOCK_SIZE, constant.STREAM_DIM);
+    test_pcrc8(&constant);
+    test_pcrc16(&constant);
+    test_pcrc32(&constant);
+    test_pcrc32_intel(&constant);
 #endif
 }

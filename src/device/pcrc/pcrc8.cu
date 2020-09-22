@@ -17,6 +17,9 @@
 #include "crc8-bitwise.h"
 #include "crc8-bytewise.h"
 #include "mod2.h"
+#include "mul2.h"
+
+using namespace timer;
 //------------------------------------------------------------------------------
 
 #define M 1             ///< Size of CRC result.
@@ -69,14 +72,32 @@ void *pcrc8_init_common(const constants_t *c)
     }
 
     // Generate beta array.
-    for (size_t i = 0; i < N; i++) 
+
+    // Slow method.
+    // for (size_t i = 0; i < N; i++) 
+    // {
+    //     size_t shift_buffer_length = M * (i + 1);
+    //     uint8_t *shift_buffer = new uint8_t[shift_buffer_length + 1]();
+    //     shift_buffer[0] = 0x01;
+    //     params->h_beta[N - i - 1] = (uint8_t) mod2_16(shift_buffer, 
+    //         shift_buffer_length + 1, params->generator + 0x100);
+    //     delete[] shift_buffer;
+    // }
+
+    // Fast method.
+    uint8_t *beta0 = new uint8_t[M + 1]();
+    uint8_t mul16_arr[2] = {};
+    beta0[0] = 0x01;
+    params->h_beta[N/M - 1] = (uint32_t) mod2_16(beta0, M + 1, 
+                              params->generator + 0x100);
+    delete[] beta0;
+    for (size_t i = 1; i < N/M; i++) 
     {
-        size_t shift_buffer_length = M * (i + 1);
-        uint8_t *shift_buffer = new uint8_t[shift_buffer_length + 1]();
-        shift_buffer[0] = 0x01;
-        params->h_beta[N - i - 1] = (uint8_t) mod2_16(shift_buffer, 
-            shift_buffer_length + 1, params->generator + 0x100);
-        delete[] shift_buffer;
+        uint16_t mul16 = mul2_16(params->h_beta[N/M - i], params->h_beta[N/M - 1]);
+        mul16 = htobe16(mul16);
+        memcpy(mul16_arr, &mul16, 2);
+        params->h_beta[N/M - i - 1] = (uint8_t) mod2_16(mul16_arr, 2, 
+            params->generator + 0x100);
     }
 
     return (void *) params;
@@ -141,30 +162,49 @@ void *pcrc8_init_task_parallelism(const constants_t *c)
     return pcrc8_init_device_task_parallelism(c, pcrc8_init_common(c));
 }
 
-void pcrc8_sequential(const constants_t *c, void *params)
+void pcrc8_sequential(const constants_t *c, void *params, host_time_t *h_time)
 {
+    Timer<HOST> TM_host;
+
     const size_t N = c->N;
 
     uint8_t *message  = ((pcrc8_params_t *) params)->h_message;
     uint8_t generator = ((pcrc8_params_t *) params)->generator;
     // TODO: implement crc8 with generator.
+
+    TM_host.start();
     uint8_t crc = crc8_bitwise(message, N);
     ((pcrc8_params_t *) params)->h_crc_res_host = crc;
+    TM_host.stop();
+
+    h_time->is_initialized = true;
+    h_time->exec_time = TM_host.duration();
 }
 
-void pcrc8_sequential_bytewise(const constants_t *c, void *params)
+void pcrc8_sequential_bytewise(const constants_t *c, void *params, host_time_t *h_time)
 {
+    Timer<HOST> TM_host;
+
     const size_t N = c->N;
 
     uint8_t *message  = ((pcrc8_params_t *) params)->h_message;
     uint8_t generator = ((pcrc8_params_t *) params)->generator;
     // TODO: implement crc8 with generator.
+
+    TM_host.start();
     uint8_t crc = crc8_bytewise(message, N, crc8_lu);
     ((pcrc8_params_t *) params)->h_crc_res_host = crc;
+    TM_host.stop();
+
+    h_time->is_initialized = true;
+    h_time->exec_time = TM_host.duration();
 }
 
-void pcrc8_parallel(const constants_t *c, void *params)
+void pcrc8_parallel(const constants_t *c, void *params, device_time_t *d_time)
 {
+    Timer<DEVICE> TM_device_kernel, TM_device_htod, TM_device_dtoh;
+    Timer<HOST> TM_host;
+
     const size_t N = c->N;
 
     uint8_t *d_message = ((pcrc8_params_t *) params)->d_message;
@@ -178,11 +218,14 @@ void pcrc8_parallel(const constants_t *c, void *params)
         ((pcrc8_params_t *) params)->h_crc_partial_res_dev;
 
     // Device copy inputs.
+    TM_device_htod.start();
     SAFE_CALL(cudaMemcpy(d_message, h_message, sizeof(uint8_t) * N, 
         cudaMemcpyHostToDevice))
     SAFE_CALL(cudaMemcpy(d_beta, h_beta, sizeof(uint8_t) * N, 
         cudaMemcpyHostToDevice))
+    TM_device_htod.stop();
 
+    TM_device_kernel.start();
     // Device dim.
     dim3 DimGrid(N / BLOCK_SIZE, 1, 1);
     if (N % BLOCK_SIZE) DimGrid.x++;
@@ -192,19 +235,33 @@ void pcrc8_parallel(const constants_t *c, void *params)
     pcrc8_kernel<<< DimGrid, DimBlock >>>(d_message, d_beta, 
         (uint16_t) generator + 0x100, d_crc_partial_res);
     CHECK_CUDA_ERROR
+    TM_device_kernel.stop();
 
     // Device copy result.
+    TM_device_dtoh.start();
     SAFE_CALL(cudaMemcpy(h_crc_partial_res_dev, d_crc_partial_res, 
         sizeof(uint8_t) * CEIL(N, BLOCK_SIZE), cudaMemcpyDeviceToHost))
+    TM_device_dtoh.stop();
     
+    TM_host.start();
     for (size_t i = 0; i < CEIL(N, BLOCK_SIZE); i++) 
     {
         ((pcrc8_params_t *) params)->h_crc_res_dev ^= h_crc_partial_res_dev[i];
     }
+    TM_host.stop();
+
+    d_time->is_initialized      = true;
+    d_time->is_task_parallelism = false;
+    d_time->htod_time   = TM_device_htod.duration();
+    d_time->kernel_time = TM_device_kernel.duration() + TM_host.duration();
+    d_time->dtoh_time   = TM_device_dtoh.duration();
 }
 
-void pcrc8_parallel_reduction(const constants_t *c, void *params)
+void pcrc8_parallel_reduction(const constants_t *c, void *params, device_time_t *d_time)
 {
+    Timer<DEVICE> TM_device_kernel, TM_device_htod, TM_device_dtoh;
+    Timer<HOST> TM_host;
+
     const size_t N = c->N;
 
     uint8_t *d_message = ((pcrc8_params_t *) params)->d_message;
@@ -218,11 +275,14 @@ void pcrc8_parallel_reduction(const constants_t *c, void *params)
         ((pcrc8_params_t *) params)->h_crc_partial_res_dev;
 
     // Device copy inputs.
+    TM_device_htod.start();
     SAFE_CALL(cudaMemcpy(d_message, h_message, sizeof(uint8_t) * N, 
         cudaMemcpyHostToDevice))
     SAFE_CALL(cudaMemcpy(d_beta, h_beta, sizeof(uint8_t) * N, 
         cudaMemcpyHostToDevice))
+    TM_device_htod.stop();
 
+    TM_device_kernel.start();
     // Device dim.
     dim3 DimGrid(N / BLOCK_SIZE, 1, 1);
     if (N % BLOCK_SIZE) DimGrid.x++;
@@ -232,19 +292,33 @@ void pcrc8_parallel_reduction(const constants_t *c, void *params)
     pcrc8_kernel_reduction<<< DimGrid, DimBlock >>>(d_message, d_beta, 
         (uint16_t) generator + 0x100, d_crc_partial_res);
     CHECK_CUDA_ERROR
+    TM_device_kernel.stop();
 
     // Device copy result.
+    TM_device_dtoh.start();
     SAFE_CALL(cudaMemcpy(h_crc_partial_res_dev, d_crc_partial_res, 
         sizeof(uint8_t) * CEIL(N, BLOCK_SIZE), cudaMemcpyDeviceToHost))
+    TM_device_dtoh.stop();
     
+    TM_host.start();
     for (size_t i = 0; i < CEIL(N, BLOCK_SIZE); i++) 
     {
         ((pcrc8_params_t *) params)->h_crc_res_dev ^= h_crc_partial_res_dev[i];
     }
+    TM_host.stop();
+
+    d_time->is_initialized      = true;
+    d_time->is_task_parallelism = false;
+    d_time->htod_time   = TM_device_htod.duration();
+    d_time->kernel_time = TM_device_kernel.duration() + TM_host.duration();
+    d_time->dtoh_time   = TM_device_dtoh.duration();
 }
 
-void pcrc8_parallel_task_parallelism(const constants_t *c, void *params)
+void pcrc8_parallel_task_parallelism(const constants_t *c, void *params, device_time_t *d_time)
 {
+    Timer<DEVICE> TM_device;
+    Timer<HOST> TM_host;
+
     const size_t  N          = c->N;
     const uint8_t STREAM_DIM = c->STREAM_DIM;
     const size_t  SEG_SIZE   = c->SEG_SIZE;
@@ -260,6 +334,7 @@ void pcrc8_parallel_task_parallelism(const constants_t *c, void *params)
         ((pcrc8_params_t *) params)->h_crc_partial_res_dev;
 
     // TASK PARALLELISM
+    TM_device.start();
     cudaStream_t stream[STREAM_DIM];
     for (uint8_t i = 0; i < STREAM_DIM; i++) {
         cudaStreamCreate(stream + i);
@@ -310,11 +385,18 @@ void pcrc8_parallel_task_parallelism(const constants_t *c, void *params)
                     stream[stream_index]) )
         }
     }
+    TM_device.stop();
 
+    TM_host.start();
     for (size_t i = 0; i < CEIL(N, BLOCK_SIZE); i++) 
     {
         ((pcrc8_params_t *) params)->h_crc_res_dev ^= h_crc_partial_res_dev[i];
     }
+    TM_host.stop();
+
+    d_time->is_initialized      = true;
+    d_time->is_task_parallelism = true;
+    d_time->kernel_time = TM_device.duration() + TM_host.duration();
 }
 
 bool pcrc8_compare(const constants_t *c, void *params)

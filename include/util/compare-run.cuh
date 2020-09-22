@@ -28,11 +28,37 @@ typedef struct constants {
     size_t  SEG_SIZE;   ///< Segment size for task parallelism.
 } constants_t;
 
+/** @brief Time statistics performed inside an host algorithm function. */
+typedef struct host_time {
+    bool    is_initialized; ///< If setted true, the time stats will be showed.
+    float   exec_time;      ///< Sequential algorithm execution time.
+} host_time_t;
+
+/** @brief Time statistics performed inside a device algorithm function. */
+typedef struct device_time {
+    bool    is_initialized; ///< If setted true, the time stats will be showed.
+    bool    is_task_parallelism; ///< If setted true, only kernel_time stat will be showed.
+    float   htod_time;      ///< Host to device transfer data time.
+    float   dtoh_time;      ///< Device to host transfer data time.
+    float   kernel_time;    ///< Parallel algorithm kernel execution time.
+} device_time_t;
+
 /** 
- * @brief Algorithm function type definition that takes as parameters the input 
- * and output of the algorithm as an unique generic pointer.
+ * @brief Host algorithm function type definition that takes as parameters 
+ * the costant threads dim and memory allocation, the input and output of the 
+ * algorithm as an unique generic pointer, and the time statistics structure 
+ * to optionally initialize. 
  */
-typedef void (*algorithm_t)(const constants_t *, void *);
+typedef void (*host_algorithm_t)(const constants_t *, void *, host_time_t *);
+
+
+/** 
+ * @brief Device algorithm function type definition that takes as parameters 
+ * the costant threads dim and memory allocation, the input and output of the 
+ * algorithm as an unique generic pointer, and the time statistics structure 
+ * to optionally initialize. 
+ */
+typedef void (*device_algorithm_t)(const constants_t *, void *, device_time_t *);
 
 /**
  * @brief Initialization function type definition that have to allocate all 
@@ -73,8 +99,8 @@ typedef bool (*compare_t)(const constants_t *, void *);
 typedef struct compare_descriptor {
     constants_t constants;          ///< Input params of CUDA implementation.
     init_t      init;               ///< Initialization function.
-    algorithm_t host_algorithm;     ///< Host algorithm function.
-    algorithm_t device_algorithm;   ///< Device algorithm function.
+    host_algorithm_t    host_algorithm;     ///< Host algorithm function.
+    device_algorithm_t  device_algorithm;   ///< Device algorithm function.
     free_t      free;               ///< Free function.
     compare_t   compare;            ///< Compare function.
     const char *info;               ///< String for algorithm description.
@@ -87,8 +113,8 @@ typedef struct compare_descriptor {
  */
 typedef struct compare_common_descriptor {
     init_device_t init_device;      ///< Initialization specific function.
-    algorithm_t   host_algorithm;   ///< Host algorithm function.
-    algorithm_t   device_algorithm; ///< Device algorithm function.
+    host_algorithm_t    host_algorithm;     ///< Host algorithm function.
+    device_algorithm_t  device_algorithm;   ///< Device algorithm function.
     free_device_t free_device;      ///< Free specific function.
     compare_t     compare;          ///< Compare function.
     const char   *info;             ///< String for algorithm description.

@@ -30,6 +30,14 @@
 /// @{
 #define CRC32_BUFFER_TEST "Ciao siamo i 3Dev!"
 #define CRC32_CHECK_VALUE 0x288153C1    ///< Correct CRC of the BUFFER_TEST.
+
+#define CRC32_INTEL_BUFFER_TEST "Ciao siamo i 3Dev!"
+#define CRC32_INTEL_INITIAL_VALUE_TEST  0x00000000
+#define CRC32_INTEL_CHECK_VALUE         0xAB4805C6
+
+#define CRC32_INTEL_HW_BUFFER_TEST "Ciao siamo i 3Dev!"
+#define CRC32_INTEL_HW_INITIAL_VALUE_TEST  0x00000000
+#define CRC32_INTEL_HW_CHECK_VALUE         0xAB4805C6
 /// @}
 
 /// CRC64 test data.
@@ -53,6 +61,8 @@
 static bool check_crc8_bitwise();
 static bool check_crc16_bitwise();
 static bool check_crc32_bitwise();
+static bool check_crc32_intel_bitwise();
+static bool check_crc32_intel_hw_bitwise();
 static bool check_crc64_bitwise();
 
 // !!! Add here new check CRC bitwise functions !!!
@@ -66,10 +76,12 @@ static bool check_crc64_bitwise();
  * the main test wrapper will call.
  */
 static check_descriptor_t crc_bitwise_tests[] = {
-    {&check_crc8_bitwise,     "CRC8 bitwise implementation"},
-    {&check_crc16_bitwise,    "CRC16 bitwise implementation"},
-    {&check_crc32_bitwise,    "CRC32 bitwise implementation"},
-    {&check_crc64_bitwise,    "CRC64 bitwise implementation"},
+    {&check_crc8_bitwise,           "CRC8 bitwise implementation"},
+    {&check_crc16_bitwise,          "CRC16 bitwise implementation"},
+    {&check_crc32_bitwise,          "CRC32 bitwise implementation"},
+    {&check_crc32_intel_bitwise,    "CRC32 intel bitwise implementation"},
+    {&check_crc32_intel_hw_bitwise, "CRC32 intel HW bitwise implementation"},
+    {&check_crc64_bitwise,          "CRC64 bitwise implementation"},
     // !!! Add here new check CRC bitwise signatures !!!
 };
 //------------------------------------------------------------------------------
@@ -101,6 +113,28 @@ static bool check_crc32_bitwise()
     uint32_t crc32 = crc32_bitwise(buffer_test, sizeof(buffer_test) - 1);
     log_processed_data_8(buffer_test, sizeof(buffer_test) - 1);
     LOGD("crc32: 0x%x\n", crc32);
+    return crc32 == check_crc;
+}
+
+static bool check_crc32_intel_bitwise()
+{
+    const char buffer_test[] = CRC32_INTEL_BUFFER_TEST;
+    uint32_t check_crc = CRC32_INTEL_CHECK_VALUE;
+    uint32_t crc32 = crc32_intel_bitwise(CRC32_INTEL_INITIAL_VALUE_TEST, 
+                buffer_test, sizeof(buffer_test) - 1);
+    log_processed_data_8(buffer_test, sizeof(buffer_test) - 1);
+    LOGD("crc32 intel: 0x%x\n", crc32);
+    return crc32 == check_crc;
+}
+
+static bool check_crc32_intel_hw_bitwise()
+{
+    const char buffer_test[] = CRC32_INTEL_HW_BUFFER_TEST;
+    uint32_t check_crc = CRC32_INTEL_HW_CHECK_VALUE;
+    uint32_t crc32 = crc32_intel_hw_bitwise(CRC32_INTEL_HW_INITIAL_VALUE_TEST, 
+                buffer_test, sizeof(buffer_test) - 1);
+    log_processed_data_8(buffer_test, sizeof(buffer_test) - 1);
+    LOGD("crc32 intel HW: 0x%x\n", crc32);
     return crc32 == check_crc;
 }
 

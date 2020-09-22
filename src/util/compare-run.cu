@@ -11,14 +11,24 @@
  */
 
 #include "compare-run.cuh"
+//------------------------------------------------------------------------------
 
-using namespace timer;
+#define B 1
+#define K 1024 * B
+#define M 1024 * K
+#define G 1024 * M
+//------------------------------------------------------------------------------
+
+static void print_host_stats(const char *info, const constants_t *consts, host_time_t *h);
+static void print_device_stats(const char *info, const constants_t *consts, device_time_t *d);
+static void print_speedup(const char *info, const constants_t *consts,  host_time_t *h, device_time_t *d);
 //------------------------------------------------------------------------------
 
 void compare_run(compare_descriptor_t *run)
 {
-    Timer<DEVICE> TM_device;
-    Timer<HOST>   TM_host;
+    host_time_t   h_time = { .is_initialized = false };
+    device_time_t d_time = { .is_initialized = false,
+                             .is_task_parallelism = false };
 
     if (!run)
     {
@@ -33,21 +43,16 @@ void compare_run(compare_descriptor_t *run)
 
     // Host execution.
     LOGI("%s: HOST START\n", run->info);
-    TM_host.start();
-    run->host_algorithm(consts, params);
-    TM_host.stop();
-    LOGI("%s: HOST DURATION %.3f ms\n", run->info, TM_host.duration());
+    run->host_algorithm(consts, params, &h_time);
+    print_host_stats(run->info, consts, &h_time);
 
     // Device execution.
     LOGI("%s: DEVICE START\n", run->info);
-    TM_device.start();
-    run->device_algorithm(consts, params);
-    TM_device.stop();
-    LOGI("%s: DEVICE DURATION %.3f ms\n", run->info, TM_device.duration());
+    run->device_algorithm(consts, params, &d_time);
+    print_device_stats(run->info, consts, &d_time);
 
     // Print speedup.
-    LOGI("%s: -- SPEEDUP %.5f\n", run->info, 
-        TM_host.duration() / TM_device.duration());
+    print_speedup(run->info, consts, &h_time, &d_time);
     
     // Check correctness.
     bool check = run->compare(consts, params);
@@ -60,8 +65,9 @@ void compare_run(compare_descriptor_t *run)
 void compare_common_run(const constants_t *consts, void *params, 
                         compare_common_descriptor_t *run)
 {
-    Timer<DEVICE> TM_device;
-    Timer<HOST>   TM_host;
+    host_time_t   h_time = { .is_initialized = false };
+    device_time_t d_time = { .is_initialized = false,
+                             .is_task_parallelism = false };
 
     if (!run)
     {
@@ -74,21 +80,16 @@ void compare_common_run(const constants_t *consts, void *params,
 
     // Host execution.
     LOGI("%s: HOST START\n", run->info);
-    TM_host.start();
-    run->host_algorithm(consts, params);
-    TM_host.stop();
-    LOGI("%s: HOST DURATION %.3f ms\n", run->info, TM_host.duration());
+    run->host_algorithm(consts, params, &h_time);
+    print_host_stats(run->info, consts, &h_time);
 
     // Device execution.
     LOGI("%s: DEVICE START\n", run->info);
-    TM_device.start();
-    run->device_algorithm(consts, params);
-    TM_device.stop();
-    LOGI("%s: DEVICE DURATION %.3f ms\n", run->info, TM_device.duration());
+    run->device_algorithm(consts, params, &d_time);
+    print_device_stats(run->info, consts, &d_time);
 
     // Print speedup.
-    LOGI("%s: -- SPEEDUP %.5f\n", run->info, 
-        TM_host.duration() / TM_device.duration());
+    print_speedup(run->info, consts, &h_time, &d_time);
     
     // Check correctness.
     bool check = run->compare(consts, params);
@@ -96,4 +97,62 @@ void compare_common_run(const constants_t *consts, void *params,
 
     // Free data.
     run->free_device(params);
+}
+
+static void print_host_stats(const char *info, const constants_t *consts, host_time_t *h)
+{
+    if (h->is_initialized) 
+    {
+        LOGI("%s: HOST DURATION %.3f ms\n", info, h->exec_time);
+    }
+}
+
+static void print_device_stats(const char *info, const constants_t *consts, device_time_t *d)
+{
+    if (d->is_initialized)
+    {
+        if (!d->is_task_parallelism)
+        {
+            LOGI("%s: DEVICE PCIe UP DURATION %.3f ms\n", info, d->htod_time);
+            LOGI("%s: DEVICE PCIe UP RATE %.3f GB/s\n", info, 
+                 (consts->N / (d->htod_time / 1000)) / G);
+            LOGI("%s: DEVICE KERNEL DURATION %.3f ms\n", info, d->kernel_time);
+            LOGI("%s: DEVICE KERNEL RATE %.3f GB/s\n", info, 
+                 (consts->N / (d->kernel_time / 1000)) / G);
+            LOGI("%s: DEVICE PCIe DOWN DURATION %.3f ms\n", info, d->dtoh_time);
+            LOGI("%s: DEVICE PCIe DOWN RATE %.3f GB/s\n", info, 
+                 (consts->N / (d->dtoh_time / 1000)) / G);
+
+            LOGI("%s: DEVICE TOTAL DURATION %.3f ms\n", info,  
+                 d->htod_time + d->kernel_time + d->dtoh_time);
+            LOGI("%s: DEVICE TOTAL RATE %.3f GB/s\n", info, 
+                 (consts->N / ((d->htod_time + d->kernel_time + d->dtoh_time) / 1000)) / G);
+        }
+        else
+        {
+            LOGI("%s: DEVICE TOTAL DURATION %.3f ms\n", info, 
+                 d->kernel_time);
+            LOGI("%s: DEVICE TOTAL RATE %.3f GB/s\n", info, 
+                 (consts->N / (d->kernel_time / 1000)) / G);
+        }
+    }
+}
+
+static void print_speedup(const char *info, const constants_t *consts, host_time_t *h, device_time_t *d)
+{
+    if (d->is_initialized && h->is_initialized)
+    {
+        if (!d->is_task_parallelism)
+        {
+            LOGI("%s: -- SPEEDUP  %.5fx\n", info, 
+                 h->exec_time / (d->htod_time + d->kernel_time + d->dtoh_time));
+            LOGI("%s: -- SPEEDUP WITHOUT TRANSFER %.5fx\n", info, 
+                 h->exec_time / d->kernel_time);
+        }
+        else 
+        {
+            LOGI("%s: -- SPEEDUP  %.5fx\n", info, 
+                 h->exec_time / d->kernel_time);
+        }
+    }
 }

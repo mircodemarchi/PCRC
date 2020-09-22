@@ -38,14 +38,14 @@ void *matrix_mul_init(const constants_t *c);
  * @param params Generic params that have to point to a matrix_mul_params_t 
  * structure.
  */
-void matrix_mul_sequential(const constants_t *c, void *params);
+void matrix_mul_sequential(const constants_t *c, void *params, host_time_t *h_time);
 
 /**
  * @brief Calculate the Matrix Multiplication in parallel device version.
  * @param params Generic params that have to point to a matrix_mul_params_t 
  * structure.
  */
-void matrix_mul_parallel(const constants_t *c, void *params);
+void matrix_mul_parallel(const constants_t *c, void *params, device_time_t *d_time);
 
 /**
  * @brief Compare the Matrix Multiplication results taken from the params in 
